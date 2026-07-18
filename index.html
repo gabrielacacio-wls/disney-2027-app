@@ -1,0 +1,1182 @@
+<title>Planejador Disney 2027</title>
+<style>
+:root {
+  --bg: #eef1f8; --card: #ffffff; --ink: #1c2340; --muted: #5c6584; --line: #d9dfee;
+  --accent: #2f5fe0; --accent-ink: #234bb4; --accent-soft: #e4ebfd;
+  --gold: #a86e07; --gold-soft: #fbeecd; --good: #178a50; --good-soft: #ddf3e7;
+  --teal: #0f766e; --teal-soft: #d8efec; --violet: #6d4fc4; --violet-soft: #eae4fa;
+  --danger: #c23636;
+  --chart-1: #2a78d6; --chart-2: #008300; --chart-3: #e87ba4; --chart-4: #eda100;
+  --chart-5: #1baf7a; --chart-6: #eb6834; --chart-7: #4a3aa7; --chart-8: #e34948;
+  --chart-9: #c98500; --chart-10: #888780;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --bg: #0e1327; --card: #171e3a; --ink: #e9edfb; --muted: #9aa5c9; --line: #2b3459;
+    --accent: #8aa6ff; --accent-ink: #aabcff; --accent-soft: #243163;
+    --gold: #ffc247; --gold-soft: #3a2f12; --good: #4ecb8d; --good-soft: #14351f;
+    --teal: #5cd6c9; --teal-soft: #123734; --violet: #b3a0f5; --violet-soft: #2c2354;
+    --danger: #ff8080;
+    --chart-1: #3987e5; --chart-2: #35a135; --chart-3: #d55181; --chart-4: #c98500;
+    --chart-5: #199e70; --chart-6: #d95926; --chart-7: #9085e9; --chart-8: #e66767;
+    --chart-9: #eda100; --chart-10: #898781;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1327; --card: #171e3a; --ink: #e9edfb; --muted: #9aa5c9; --line: #2b3459;
+  --accent: #8aa6ff; --accent-ink: #aabcff; --accent-soft: #243163;
+  --gold: #ffc247; --gold-soft: #3a2f12; --good: #4ecb8d; --good-soft: #14351f;
+  --teal: #5cd6c9; --teal-soft: #123734; --violet: #b3a0f5; --violet-soft: #2c2354;
+  --danger: #ff8080;
+  --chart-1: #3987e5; --chart-2: #35a135; --chart-3: #d55181; --chart-4: #c98500;
+  --chart-5: #199e70; --chart-6: #d95926; --chart-7: #9085e9; --chart-8: #e66767;
+  --chart-9: #eda100; --chart-10: #898781;
+}
+:root[data-theme="light"] {
+  --bg: #eef1f8; --card: #ffffff; --ink: #1c2340; --muted: #5c6584; --line: #d9dfee;
+  --accent: #2f5fe0; --accent-ink: #234bb4; --accent-soft: #e4ebfd;
+  --gold: #a86e07; --gold-soft: #fbeecd; --good: #178a50; --good-soft: #ddf3e7;
+  --teal: #0f766e; --teal-soft: #d8efec; --violet: #6d4fc4; --violet-soft: #eae4fa;
+  --danger: #c23636;
+  --chart-1: #2a78d6; --chart-2: #008300; --chart-3: #e87ba4; --chart-4: #eda100;
+  --chart-5: #1baf7a; --chart-6: #eb6834; --chart-7: #4a3aa7; --chart-8: #e34948;
+  --chart-9: #c98500; --chart-10: #888780;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; margin: 0; line-height: 1.5; }
+.wrap { max-width: 1060px; margin: 0 auto; padding: 24px 20px 64px; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 600; }
+h1 { font-size: 26px; margin: 2px 0 0; font-weight: 700; letter-spacing: -.01em; }
+h2 { font-size: 18px; margin: 0 0 4px; font-weight: 650; }
+h3 { font-size: 14px; margin: 0 0 8px; font-weight: 650; }
+.sub { color: var(--muted); font-size: 13.5px; margin: 4px 0 0; }
+header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-ink); border-radius: 999px; padding: 4px 12px; font-size: 12.5px; font-weight: 600; }
+.chip.gold { background: var(--gold-soft); color: var(--gold); }
+nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
+nav.tabs button { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 8px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
+nav.tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+:root[data-theme="dark"] nav.tabs button.on, :root:not([data-theme="light"]) nav.tabs button.on { color: #0e1327; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) nav.tabs button.on { color: #fff; } }
+:root[data-theme="light"] nav.tabs button.on { color: #fff; }
+nav.tabs button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+section.tab { display: none; }
+section.tab.on { display: block; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; }
+.grid { display: grid; gap: 14px; }
+.g2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.g4 { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.hero { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; }
+@media (min-width: 760px) { .hero { grid-template-columns: 5fr 4fr; } }
+.count-card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 22px 24px; position: relative; overflow: hidden; }
+.count-num { font-size: 64px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; line-height: 1; color: var(--accent-ink); }
+.count-sub { display: flex; gap: 14px; margin-top: 10px; flex-wrap: wrap; }
+.count-sub span { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.count-sub b { color: var(--ink); font-weight: 650; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.stat .lbl { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+.stat .val { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat .note { font-size: 12px; color: var(--muted); }
+.bar { height: 8px; background: var(--accent-soft); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+ul.next { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 8px; }
+ul.next li { display: flex; gap: 10px; align-items: baseline; font-size: 14px; }
+ul.next li .ph { flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--gold); background: var(--gold-soft); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+table.custos { width: 100%; border-collapse: collapse; font-size: 14px; }
+table.custos th { text-align: left; font-size: 11.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+table.custos td { padding: 5px 8px; border-bottom: 1px solid var(--line); }
+table.custos td.num, table.custos th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.custos input[type="text"], table.custos input[type="number"] { width: 100%; border: 1px solid transparent; background: transparent; color: var(--ink); font: inherit; padding: 4px 6px; border-radius: 8px; }
+table.custos input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+table.custos input:hover, table.custos input:focus { border-color: var(--line); background: var(--bg); }
+table.custos .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 15px; padding: 2px 6px; border-radius: 6px; }
+table.custos .del:hover { color: var(--danger); background: var(--bg); }
+table.custos tfoot td { font-weight: 700; border-bottom: none; padding-top: 10px; }
+.btn { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 7px 14px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+.btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.btn.ghost { color: var(--muted); }
+.field { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.field input, .field select { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 6px 8px; font: inherit; font-size: 13px; }
+.legend { display: grid; gap: 7px; margin-top: 4px; }
+.legend .row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.legend .sw { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }
+.legend .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.legend .vv { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cal-wrap { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
+.month { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 16px; }
+.month h3 { text-align: center; text-transform: capitalize; }
+.dow, .days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.dow span { font-size: 10.5px; text-transform: uppercase; color: var(--muted); text-align: center; font-weight: 700; padding: 2px 0; }
+.days .d { aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 9px; font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); position: relative; }
+.days .d.trip { background: var(--accent-soft); color: var(--ink); font-weight: 600; cursor: pointer; border: 1px solid transparent; }
+.days .d.trip:hover { border-color: var(--accent); }
+.days .d .dot { width: 6px; height: 6px; border-radius: 99px; margin-top: 2px; }
+.days .d.sel { border: 2px solid var(--accent); }
+.tipo-parque { background: var(--chart-1); } .tipo-descanso { background: var(--chart-5); }
+.tipo-compras { background: var(--chart-4); } .tipo-viagem { background: var(--chart-7); } .tipo-outro { background: var(--chart-10); }
+.rot-list { display: grid; gap: 6px; margin-top: 14px; }
+.rot-row { display: grid; grid-template-columns: 84px 118px 1fr; gap: 8px; align-items: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.rot-row.today-sel { border-color: var(--accent); }
+.rot-row .dt { font-size: 12.5px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.rot-row select { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 5px 6px; font: inherit; font-size: 12.5px; }
+.rot-row input { border: 1px solid transparent; background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; padding: 5px 8px; border-radius: 8px; min-width: 0; }
+.rot-row input:hover, .rot-row input:focus { border-color: var(--line); background: var(--bg); }
+@media (max-width: 560px) { .rot-row { grid-template-columns: 70px 1fr; } .rot-row input { grid-column: 1 / -1; } }
+.phase { margin-bottom: 18px; }
+.phase .ph-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.phase .ph-head .pct { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+ul.check { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+ul.check li { display: flex; gap: 10px; align-items: flex-start; padding: 7px 10px; border-radius: 10px; }
+ul.check li:hover { background: var(--bg); }
+ul.check input[type="checkbox"] { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+ul.check label { font-size: 14px; cursor: pointer; }
+ul.check li.done label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.muted { color: var(--muted); font-size: 12.5px; }
+.mt { margin-top: 14px; }
+.kd-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 6px; }
+.kd-list li { display: flex; align-items: baseline; gap: 10px; font-size: 13.5px; padding: 6px 10px; border-radius: 10px; background: var(--bg); }
+.kd-list .kd-date { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-ink); white-space: nowrap; min-width: 52px; }
+.kd-list .kd-left { margin-left: auto; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.kd-list li.past { opacity: .55; }
+.kd-list li.soon .kd-left { color: var(--gold); font-weight: 700; }
+.pes-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 10px; }
+.pes { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.pes .nm { font-weight: 650; font-size: 14px; }
+.pes .role { font-size: 11.5px; color: var(--muted); }
+.pes button.st { align-self: flex-start; border: none; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 2px; }
+.pes button.st.ok { background: var(--good-soft); color: var(--good); }
+.pes button.st.pend { background: var(--gold-soft); color: var(--gold); }
+.shop-list { display: grid; gap: 6px; margin-top: 10px; }
+.shop-row { display: grid; grid-template-columns: 22px 1fr 120px 86px 26px; gap: 8px; align-items: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.shop-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--good); cursor: pointer; }
+.shop-row input[type="text"], .shop-row input[type="number"] { border: 1px solid transparent; background: transparent; color: var(--ink); font: inherit; font-size: 13.5px; padding: 4px 6px; border-radius: 8px; min-width: 0; }
+.shop-row input[type="number"] { text-align: right; font-variant-numeric: tabular-nums; }
+.shop-row input:hover, .shop-row input:focus { border-color: var(--line); background: var(--bg); }
+.shop-row select { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 4px 6px; font: inherit; font-size: 12.5px; }
+.shop-row.ok input[type="text"], .shop-row.ok input[type="number"] { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+.shop-row .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 2px 4px; border-radius: 6px; }
+.shop-row .del:hover { color: var(--danger); }
+.sb-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.sb-card .nm { font-weight: 650; font-size: 13.5px; }
+.sb-card .vv { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.sb-card .bar { margin: 6px 0 0; }
+.sb-card .bar i.over { background: var(--danger); }
+@media (max-width: 560px) { .shop-row { grid-template-columns: 22px 1fr 26px; } .shop-row select, .shop-row input[type="number"] { grid-column: 2 / 3; } }
+.alt-grid { display: grid; gap: 6px; margin-top: 10px; }
+.alt-row { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: baseline; padding: 7px 10px; border-radius: 10px; background: var(--bg); font-size: 13px; }
+.alt-row .cut { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-ink); }
+.alt-row .who { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 3px; }
+.pill { display: inline-flex; border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 700; }
+.pill.sim { background: var(--good-soft); color: var(--good); }
+.pill.nao { background: var(--gold-soft); color: var(--gold); }
+.park-card h3 { margin-bottom: 4px; }
+.park-card ul { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; display: grid; gap: 4px; }
+.park-card .tagline { font-size: 12px; color: var(--muted); }
+.cofre-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.cofre-list { display: grid; gap: 4px; margin-top: 10px; }
+.cofre-item { display: flex; gap: 10px; align-items: center; font-size: 13px; padding: 5px 10px; border-radius: 8px; background: var(--bg); font-variant-numeric: tabular-nums; }
+.cofre-item .del { margin-left: auto; background: none; border: none; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.cofre-item .del:hover { color: var(--danger); }
+.pago-line { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; }
+.pago-line b { font-variant-numeric: tabular-nums; }
+table.custos input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--good); cursor: pointer; }
+table.custos tr.paid td, table.custos tr.paid input { color: var(--muted); }
+@media (max-width: 680px) {
+  .wrap { padding: 14px 12px 92px; }
+  h1 { font-size: 21px; }
+  header.top { margin-bottom: 12px; }
+  .count-card { padding: 16px 18px; }
+  .count-num { font-size: 44px; }
+  .stat .val { font-size: 17px; }
+  .g4 { grid-template-columns: 1fr 1fr; }
+  .card { padding: 14px 14px; }
+  nav.tabs { position: fixed; bottom: 0; left: 0; right: 0; margin: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom)); background: var(--card); border-top: 1px solid var(--line); justify-content: space-around; gap: 4px; z-index: 50; }
+  nav.tabs button { flex: 1; border: none; background: transparent; padding: 9px 1px; font-size: 11px; border-radius: 10px; }
+  nav.tabs button.on { background: var(--accent-soft); color: var(--accent-ink) !important; }
+  .legend .row { font-size: 12.5px; }
+  table.custos { font-size: 13px; }
+  .kd-list li { font-size: 12.5px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Planejador da família · Gabriel, Débora, Regina, Dario, Laura e José</div>
+      <h1>Orlando &amp; Disney 2027 🏰</h1>
+    </div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+      <span class="chip" id="chipDatas"></span>
+      <span class="chip gold" id="chipCount"></span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button data-tab="dash" class="on">Resumo</button>
+    <button data-tab="custos">Custos</button>
+    <button data-tab="cal">Agenda</button>
+    <button data-tab="shop">Compras</button>
+    <button data-tab="guia">Guia</button>
+    <button data-tab="check">Checklist</button>
+  </nav>
+
+  <section class="tab on" id="tab-dash">
+    <div class="hero">
+      <div class="count-card">
+        <div class="eyebrow">Contagem regressiva para o embarque</div>
+        <div class="count-num"><span id="cdDias">—</span> dias</div>
+        <div class="count-sub">
+          <span><b id="cdH">—</b> horas</span><span><b id="cdM">—</b> min</span><span><b id="cdS">—</b> seg</span>
+          <span id="cdInfo"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="eyebrow">Preparativos</div>
+        <div style="display:flex; align-items:baseline; gap:8px;"><span class="count-num" style="font-size:34px;" id="pgPct">0%</span><span class="muted" id="pgTxt"></span></div>
+        <div class="bar"><i id="pgBar" style="width:0%"></i></div>
+        <ul class="next" id="nextList"></ul>
+      </div>
+    </div>
+    <div class="grid g4">
+      <div class="stat"><div class="lbl">Total em dinheiro</div><div class="val" id="stUSD">—</div><div class="note" id="stBRL"></div></div>
+      <div class="stat"><div class="lbl">Média por pessoa (6)</div><div class="val" id="stPP">—</div><div class="note" id="stPPBRL"></div></div>
+      <div class="stat"><div class="lbl">Duração</div><div class="val" id="stDias">—</div><div class="note">contando chegada e volta</div></div>
+      <div class="stat"><div class="lbl">Dias de parque</div><div class="val" id="stParques">—</div><div class="note" id="stParquesNote"></div></div>
+      <div class="stat"><div class="lbl">🐷 Cofrinho</div><div class="val" id="stCofre">—</div><div class="note" id="stCofreNote"></div></div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>Datas-chave <span class="muted" style="font-weight:400;">— prazos calculados a partir da ida</span></h3>
+        <ul class="kd-list" id="kdList"></ul>
+      </div>
+      <div class="card">
+        <h3>Documentos da família <span class="muted" style="font-weight:400;">— toque no status para alternar</span></h3>
+        <div class="pes-grid" id="pesGrid"></div>
+      </div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>A viagem num parágrafo</h3>
+        <p class="sub" style="font-size:14px; line-height:1.65;">Voo direto <b>Azul VCP → MCO</b> (~9h) emitido com as <b>650 mil milhas Azul Fidelidade</b> do cartão Skyline. Base no <b>Celebration Suites</b> (Old Town, Kissimmee), suíte 2 quartos/2 banheiros renovada, com minivan alugada. Ritmo: parque dia sim, dia não, com pausa de soneca do José (13h-16h). Seguro médico de US$ 175 mil pelo MasterAssist Black para os 6.</p>
+      </div>
+      <div class="card">
+        <h3>Regras de ouro</h3>
+        <ul class="next" style="margin-top:6px;">
+          <li><span class="ph">Seguro</span><span>Passagens e taxas sempre no cartão Skyline + bilhete AIG emitido antes do embarque</span></li>
+          <li><span class="ph">José</span><span>Tem 2 anos na viagem: grátis em parques e buffets (levar certidão)</span></li>
+          <li><span class="ph">Alturas</span><span>Remedir as crianças 1 mês antes — cortes: 92 cm (José) e 112 cm (Laura)</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-custos">
+    <div class="grid" style="grid-template-columns: 1fr; gap:14px;">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+          <h2>Custos da viagem</h2>
+          <div class="field"><label for="cambio">Câmbio R$/US$</label><input id="cambio" type="number" step="0.05" min="1" style="width:80px;"></div>
+        </div>
+        <p class="muted" style="margin:2px 0 12px;">Edite os valores à vontade — tudo recalcula na hora e fica salvo neste navegador. Documentos (vistos/passaporte, ~US$ 600) ficam fora por serem pagos em 2026; adicione uma linha se quiser incluí-los.</p>
+        <div style="overflow-x:auto;">
+        <table class="custos">
+          <thead><tr><th style="width:36%">Categoria</th><th class="num">Orçado US$</th><th class="num">Real US$</th><th class="num">R$</th><th class="num">%</th><th style="text-align:center;">Pago</th><th></th></tr></thead>
+          <tbody id="custoRows"></tbody>
+          <tfoot><tr><td>Total</td><td class="num" id="totUSD"></td><td class="num" id="totReal"></td><td class="num" id="totBRL"></td><td class="num">100%</td><td></td><td></td></tr></tfoot>
+        </table>
+        </div>
+        <div class="pago-line">
+          <span>✔ Já pago: <b id="pagoUSD">—</b></span>
+          <span>Restante: <b id="faltaUSD">—</b> <span class="muted" id="faltaBRL"></span></span>
+          <span id="realDelta"></span>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="addRow">+ Adicionar categoria</button>
+          <span class="chip gold">✈ Voos cobertos por 650 mil pontos Azul — em dinheiro, só as taxas</span>
+        </div>
+      </div>
+      <div class="grid g2">
+        <div class="card">
+          <h3>Distribuição</h3>
+          <div style="display:flex; gap:18px; align-items:center; flex-wrap:wrap;">
+            <svg id="donut" viewBox="0 0 200 200" width="190" height="190" role="img" aria-label="Gráfico de rosca com a distribuição dos custos"></svg>
+            <div class="legend" id="legend" style="flex:1; min-width:210px;"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Por pessoa</h3>
+          <div class="grid g4" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
+            <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">Média (÷6)</div><div class="val" id="ppUSD">—</div><div class="note" id="ppBRL"></div></div>
+            <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">Adultos (cada)</div><div class="val" id="ppAd">—</div><div class="note">tarifa cheia nos parques</div></div>
+            <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">José</div><div class="val" id="ppJose">—</div><div class="note">≈45% abaixo da média</div></div>
+          </div>
+          <p class="muted mt">Rateio: custos compartilhados (hospedagem, carro, comida, taxas, seguro) divididos por 6 + gastos individuais. Laura fica ≈ R$ 500 abaixo dos adultos; José só paga os compartilhados.</p>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+          <h3>🐷 Cofrinho da viagem</h3>
+          <div class="field"><label for="cofreMeta">Meta (R$)</label><input id="cofreMeta" type="number" step="1000" min="0" style="width:110px;" placeholder="auto"></div>
+        </div>
+        <div style="display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; margin-top:6px;">
+          <span class="count-num" style="font-size:28px;" id="cofrePct">0%</span>
+          <span class="muted" id="cofreResumo"></span>
+        </div>
+        <div class="bar"><i id="cofreBar" style="width:0%"></i></div>
+        <p class="muted" id="cofreRitmo" style="margin:6px 0 0;"></p>
+        <div class="cofre-row">
+          <input type="month" id="apMes" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px;">
+          <input type="number" id="apValor" placeholder="Valor (R$)" step="100" min="0" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px; width:130px;">
+          <button class="btn" id="addAporte">+ Guardar aporte</button>
+        </div>
+        <div class="cofre-list" id="cofreList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-guia">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;">
+        <h2>Guia de bolso dos parques</h2>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field"><label for="altJose">José (cm)</label><input type="number" id="altJose" min="60" max="140" style="width:70px;"></div>
+          <div class="field"><label for="altLaura">Laura (cm)</label><input type="number" id="altLaura" min="80" max="160" style="width:70px;"></div>
+        </div>
+      </div>
+      <p class="muted" style="margin:2px 0 0;">Atualize as alturas (medidas de tênis!) e veja na hora o que cada um pode ir. A Disney/Universal medem na entrada da fila.</p>
+      <div class="alt-grid" id="altGrid"></div>
+    </div>
+    <div class="grid g2">
+      <div class="card park-card">
+        <h3>🏰 Magic Kingdom</h3>
+        <ul>
+          <li><b>José:</b> quase tudo da Fantasyland (Peter Pan, Dumbo, Small World, Pooh), Pirates, Jungle Cruise, Buzz, PeopleMover, Speedway (81cm), Barnstormer (89cm)</li>
+          <li><b>Laura:</b> + Tiana's e Space Mountain se ≥ altura do dia; Seven Dwarfs e Big Thunder (97cm)</li>
+          <li><b>Rider Switch:</b> Tiana's, Space Mountain, TRON (só adultos)</li>
+          <li><b>Avós:</b> PeopleMover, trem do parque, Hall of Presidents, Country Bears</li>
+          <li>Fogos Happily Ever After — crianças podem dormir no carrinho</li>
+        </ul>
+      </div>
+      <div class="card park-card">
+        <h3>🌍 EPCOT</h3>
+        <ul>
+          <li><b>José:</b> Frozen Ever After, Remy's Ratatouille, Nemo, Spaceship Earth, Living with the Land — tudo sem altura mínima</li>
+          <li><b>Laura:</b> Soarin', Test Track (102cm); Cosmic Rewind (107cm); Mission: SPACE laranja só se ≥112cm</li>
+          <li><b>Rider Switch:</b> Soarin', Test Track, Guardians (para o José)</li>
+          <li><b>Avós:</b> World Showcase no ritmo deles + Flower &amp; Garden (casa das borboletas p/ crianças)</li>
+          <li>Almoço com princesas: Akershus (Noruega)</li>
+        </ul>
+      </div>
+      <div class="card park-card">
+        <h3>🎬 Hollywood Studios</h3>
+        <ul>
+          <li><b>José:</b> Toy Story Mania, Alien Swirling Saucers (81cm), Runaway Railway, shows Disney Jr e Frozen Sing-Along</li>
+          <li><b>Laura:</b> Rise of the Resistance e Tower of Terror (102cm); Slinky Dog e Millennium Falcon (97cm)</li>
+          <li><b>Rider Switch:</b> Rise, Tower, Rock 'n' Roller (só adultos, 122cm)</li>
+          <li>Chegar na abertura direto na Toy Story Land</li>
+        </ul>
+      </div>
+      <div class="card park-card">
+        <h3>🦁 Animal Kingdom</h3>
+        <ul>
+          <li><b>José:</b> Kilimanjaro Safaris (ir cedo!), Na'vi River Journey, trem, Festival of the Lion King</li>
+          <li><b>Laura:</b> Kali River Rapids (97cm); Everest e Flight of Passage só se ≥112cm</li>
+          <li><b>Rider Switch:</b> Flight of Passage, Everest</li>
+          <li>Almoço Tusker House (Mickey safári); parque fecha cedo — sair ~15h</li>
+        </ul>
+      </div>
+      <div class="card park-card">
+        <h3>🌌 Epic Universe</h3>
+        <ul>
+          <li><b>José:</b> Constellation Carousel, Fyre Drill, Yoshi's Adventure (86cm), playground Viking, splash zone Astronomica, shows Untrainable Dragon e Cirque Arcanus</li>
+          <li><b>Laura:</b> Mario Kart, Mine-Cart Madness, Hiccup's Wing Gliders, Battle at the Ministry (102cm)</li>
+          <li><b>Child Swap:</b> em todas — sala climatizada junto ao embarque</li>
+          <li>Ir terça a quinta; Power-Up Bands na Super Nintendo World</li>
+        </ul>
+      </div>
+      <div class="card park-card">
+        <h3>🎢 Universal Studios + Islands of Adventure</h3>
+        <ul>
+          <li><b>José:</b> DreamWorks Land (playgrounds + Trolls 92cm), E.T. (86cm), Seuss Landing, Camp Jurassic, Hogwarts Express</li>
+          <li><b>Laura:</b> Minion Mayhem, Spider-Man e Kong (102cm); Hagrid's/Velocicoaster ficam p/ os adultos</li>
+          <li><b>Child Swap:</b> em todas as atrações com altura mínima</li>
+          <li>Pteranodon Flyers: SÓ para quem tem criança de 92-142cm — fila lenta, ir cedo</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card mt park-card">
+      <h3>⚡ Lembretes rápidos</h3>
+      <ul>
+        <li><b>Rider Switch (Disney):</b> a família TODA faz check-in com o Cast Member ANTES da fila; grupo 2 (máx. 2 pessoas) entra pela Lightning Lane depois — a Laura pode ir de novo acompanhando</li>
+        <li><b>Child Swap (Universal):</b> todos entram juntos na fila; sala de espera climatizada na área de embarque</li>
+        <li><b>José:</b> levar cópia da certidão de nascimento na mochila (entra grátis, sistema de confiança)</li>
+        <li><b>Água grátis</b> em qualquer quick service (pedir "cup of water"); mobile order no app evita fila de almoço</li>
+        <li><b>Pausa 13h-16h</b> no hotel: soneca do José = família inteira aguenta a noite</li>
+        <li><b>Emergência médica:</b> ligar ANTES para o seguro — 1-800-627-8372 (AIG/Mastercard)</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-cal">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px;">
+        <h2>Calendário da viagem</h2>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <div class="field"><label for="dtIni">Ida</label><input type="date" id="dtIni"></div>
+          <div class="field"><label for="dtFim">Volta</label><input type="date" id="dtFim"></div>
+        </div>
+      </div>
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-top:8px;" class="muted">
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:99px;" class="tipo-parque"></i> parque</span>
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:99px;" class="tipo-descanso"></i> descanso/piscina</span>
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:99px;" class="tipo-compras"></i> compras</span>
+        <span><i style="display:inline-block;width:8px;height:8px;border-radius:99px;" class="tipo-viagem"></i> voo</span>
+      </div>
+    </div>
+    <div class="cal-wrap" id="calWrap"></div>
+    <div class="card mt">
+      <h3>Roteiro dia a dia <span class="muted" style="font-weight:400;">— clique num dia do calendário ou edite direto</span></h3>
+      <div class="rot-list" id="rotList"></div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-shop">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <h2>Orçamento de compras</h2>
+        <div class="field"><label for="shopBudget">Orçamento por pessoa (US$)</label><input id="shopBudget" type="number" step="50" min="0" style="width:90px;"></div>
+      </div>
+      <p class="muted" style="margin:2px 0 10px;">Itens marcados como "Família" são rateados entre os 6 no orçamento individual.</p>
+      <div class="grid g4" id="shopBudgets" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));"></div>
+    </div>
+    <div class="card">
+      <h3>Lista de compras <span class="muted" style="font-weight:400;">— marque quando comprar</span></h3>
+      <div class="shop-list" id="shopList"></div>
+      <div class="toolbar">
+        <button class="btn" id="addShop">+ Adicionar item</button>
+        <span class="muted" id="shopTot"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="tab" id="tab-check">
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
+        <h2>Lista de malas</h2>
+        <span class="muted" id="malasResumo"></span>
+      </div>
+      <div id="malasGroups"></div>
+      <div class="toolbar" style="border-top:none; padding-top:4px;">
+        <input type="text" id="malaNovo" placeholder="Novo item…" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; flex:1; min-width:140px;">
+        <select id="malaQuem" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px;"></select>
+        <button class="btn" id="addMala">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <h2>Cronograma de reservas</h2>
+        <span class="muted" id="checkResumo"></span>
+      </div>
+      <div id="phases"></div>
+      <div class="toolbar">
+        <button class="btn" id="btnExport">Exportar dados (JSON)</button>
+        <label class="btn" style="cursor:pointer;">Importar<input type="file" id="btnImport" accept=".json" style="display:none;"></label>
+        <button class="btn ghost" id="btnReset">Restaurar padrão do plano</button>
+        <span class="muted">As edições ficam salvas só neste navegador — exporte o JSON para levar a outro aparelho.</span>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var KEY = 'disney2027-planner-v1';
+  var PESSOAS = 6;
+  var TIPOS = { parque: 'Parque', descanso: 'Descanso', compras: 'Compras', viagem: 'Voo', outro: 'Outro' };
+
+  var DEF = {
+    inicio: '2027-04-23', fim: '2027-05-11', cambio: 5.5,
+    custos: [
+      { n: 'Ingressos Disney (8 dias + Lightning Lane)', v: 4700 },
+      { n: 'Hospedagem — Celebration Suites 2BR/2BA', v: 3400 },
+      { n: 'Alimentação (mercado + parques)', v: 3000 },
+      { n: 'Universal (3 dias) + LEGOLAND/Peppa', v: 2650 },
+      { n: 'Carro (minivan) + gasolina + estacionamento', v: 1500 },
+      { n: 'Voos — taxas de embarque (6 em pontos)', v: 550 },
+      { n: 'Seguro viagem (plano B)', v: 500 },
+      { n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }
+    ],
+    flags: { compras1000: true },
+    alturas: { jose: 86, laura: 108 },
+    cofre: { meta: 0, aportes: [] },
+    malas: [
+      { p: 'Todos', t: 'Passaportes + vistos', ok: false },
+      { p: 'Todos', t: 'Certidões de nascimento das crianças (cópias)', ok: false },
+      { p: 'Todos', t: 'Bilhetes de seguro AIG impressos/no celular', ok: false },
+      { p: 'Todos', t: 'Reservas impressas (hotel, carro, ingressos)', ok: false },
+      { p: 'Todos', t: 'Capas de chuva (6)', ok: false },
+      { p: 'Todos', t: 'Garrafas de água reutilizáveis', ok: false },
+      { p: 'Todos', t: 'Protetor solar e repelente', ok: false },
+      { p: 'Todos', t: 'Casaco leve (noites de abril ~17°C)', ok: false },
+      { p: 'Gabriel', t: 'Cartão Skyline + cartão reserva', ok: false },
+      { p: 'Gabriel', t: 'Dólares em espécie (US$ 300-500)', ok: false },
+      { p: 'Gabriel', t: 'Powerbank e carregadores', ok: false },
+      { p: 'Débora', t: 'Kit primeiros socorros + remédios das crianças', ok: false },
+      { p: 'Regina', t: 'Remédios de uso contínuo na bagagem de mão', ok: false },
+      { p: 'Regina', t: 'Receitas médicas traduzidas', ok: false },
+      { p: 'Dario', t: 'Remédios de uso contínuo na bagagem de mão', ok: false },
+      { p: 'Dario', t: 'Tênis confortável já amaciado', ok: false },
+      { p: 'Laura', t: 'Mochila pequena para o parque', ok: false },
+      { p: 'Laura', t: 'Boné e óculos de sol', ok: false },
+      { p: 'José', t: 'Carrinho compacto de viagem', ok: false },
+      { p: 'José', t: 'Cinto CARES / cadeirinha', ok: false },
+      { p: 'José', t: 'Fraldas + troca de roupa extra na mochila', ok: false },
+      { p: 'José', t: 'Pelúcia do sono', ok: false }
+    ],
+    shopBudget: 1000,
+    compras: [
+      { t: 'Roupas e tênis (outlets Vineland)', p: 'Família', v: 2000, ok: false },
+      { t: 'Eletrônicos (Best Buy / Apple)', p: 'Gabriel', v: 500, ok: false },
+      { t: 'Perfumes e maquiagem (Sephora/Ulta)', p: 'Débora', v: 300, ok: false },
+      { t: 'Souvenirs e orelhas Disney (World of Disney)', p: 'Família', v: 300, ok: false },
+      { t: 'LEGO Store (Disney Springs)', p: 'Laura', v: 200, ok: false },
+      { t: 'Pelúcias e brinquedos', p: 'José', v: 150, ok: false },
+      { t: 'Vitaminas e farmácia (CVS/Walgreens)', p: 'Regina', v: 150, ok: false },
+      { t: 'Presentes para levar', p: 'Dario', v: 150, ok: false },
+      { t: 'Chocolates e guloseimas (Walmart)', p: 'Família', v: 150, ok: false }
+    ],
+    roteiro: {
+      '2027-04-23': { t: 'viagem', d: 'Voo VCP → MCO (Azul), carro, check-in Celebration Suites, mercado' },
+      '2027-04-24': { t: 'descanso', d: 'Piscina e adaptação ao fuso; Disney Springs à noite' },
+      '2027-04-25': { t: 'compras', d: 'Vineland Outlets de manhã + piscina' },
+      '2027-04-26': { t: 'parque', d: 'Magic Kingdom #1 — Fantasyland; fogos Happily Ever After' },
+      '2027-04-27': { t: 'descanso', d: 'Descanso / piscina' },
+      '2027-04-28': { t: 'parque', d: 'EPCOT #1 — Frozen e Remy cedo; almoço Akershus; Flower & Garden' },
+      '2027-04-29': { t: 'descanso', d: 'Folga; café da manhã Topolino’s Terrace (Riviera)' },
+      '2027-04-30': { t: 'parque', d: 'Animal Kingdom — safári cedo; almoço Tusker House; sair ~15h' },
+      '2027-05-01': { t: 'parque', d: 'LEGOLAND (Laura) + Peppa Pig Park (José) — grupo se divide' },
+      '2027-05-02': { t: 'descanso', d: 'Piscina; Old Town a pé à noite' },
+      '2027-05-03': { t: 'parque', d: 'Hollywood Studios — Toy Story Land cedo; Rider Switch em Rise/Tower' },
+      '2027-05-04': { t: 'descanso', d: 'Descanso / piscina' },
+      '2027-05-05': { t: 'parque', d: 'Epic Universe — Super Nintendo World + Isle of Berk (Child Swap)' },
+      '2027-05-06': { t: 'parque', d: 'Universal Studios — DreamWorks Land + Minion Land + E.T.' },
+      '2027-05-07': { t: 'descanso', d: 'Descanso / piscina' },
+      '2027-05-08': { t: 'parque', d: 'Islands of Adventure — Seuss Landing; Potter para os adultos' },
+      '2027-05-09': { t: 'parque', d: 'Magic Kingdom #2 — despedida, fotos no castelo, fogos' },
+      '2027-05-10': { t: 'compras', d: 'Compras finais, malas, piscina' },
+      '2027-05-11': { t: 'viagem', d: 'Devolução do carro, voo MCO → VCP' }
+    },
+    pessoas: [
+      { n: 'Gabriel', r: 'visto válido', s: 'ok' },
+      { n: 'Débora', r: 'visto válido', s: 'ok' },
+      { n: 'Laura', r: 'visto válido', s: 'ok' },
+      { n: 'Regina', r: 'renovação de visto', s: 'pend' },
+      { n: 'Dario', r: 'renovação de visto', s: 'pend' },
+      { n: 'José', r: 'passaporte + 1º visto', s: 'pend' }
+    ],
+    checklist: [
+      { f: 'Agora (jul–ago/2026)', t: 'Conferir validade dos 5 passaportes existentes (além de mai/2027)', ok: false },
+      { f: 'Agora (jul–ago/2026)', t: 'Passaporte do José: pagar GRU (R$ 257,25) e agendar na PF — os dois pais + certidão', ok: false },
+      { f: 'Agora (jul–ago/2026)', t: 'Confirmar o saldo de 650 mil pontos no app Azul Fidelidade', ok: false },
+      { f: 'Agora (jul–ago/2026)', t: 'Assinar o menor plano do Clube Azul (descontos + bônus + pontos não expiram)', ok: true },
+      { f: 'Agora (jul–ago/2026)', t: 'Ativar alertas de emissão em pontos VCP–MCO (Melhores Destinos, PP, PPV)', ok: false },
+      { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario e José', ok: false },
+      { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina e Dario juntos', ok: false },
+      { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
+      { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
+      { f: 'Ago–nov/2026', t: 'Emitir as 6 passagens com pontos (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Vistos dos 3 em mãos ✓', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Reservar minivan com cancelamento grátis — pagar no Skyline (ativa CDW)', ok: false },
+      { f: 'Fev–mar/2027', t: 'Dia -60, 6h ET: reservas de restaurantes (Topolino’s primeiro, depois Akershus, Tusker, Chef Mickey’s)', ok: false },
+      { f: 'Fev–mar/2027', t: 'Emitir os 6 bilhetes de seguro AIG/MasterAssist e guardar os PDFs', ok: false },
+      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente', ok: false },
+      { f: 'Fev–mar/2027', t: 'Reconferir regras do Lightning Lane e comprar Multi Pass (MK e HS)', ok: false },
+      { f: 'Fev–mar/2027', t: 'Cadastrar os 6 no My Disney Experience + app Universal; vincular ingressos', ok: false },
+      { f: 'Semana da viagem', t: 'Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas', ok: false },
+      { f: 'Semana da viagem', t: 'Receitas médicas dos avós; remédios na bagagem de mão', ok: false },
+      { f: 'Semana da viagem', t: 'Check-in online; despacho de carrinho e cadeirinha', ok: false },
+      { f: 'Semana da viagem', t: 'Remedir as alturas de Laura e José (de tênis)', ok: false }
+    ]
+  };
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return JSON.parse(JSON.stringify(DEF));
+      var s = JSON.parse(raw);
+      if (!s.custos || !s.checklist || !s.roteiro) return JSON.parse(JSON.stringify(DEF));
+      if (!s.pessoas) s.pessoas = JSON.parse(JSON.stringify(DEF.pessoas));
+      if (!s.compras) s.compras = JSON.parse(JSON.stringify(DEF.compras));
+      if (!s.shopBudget) s.shopBudget = 1000;
+      if (!s.flags) s.flags = {};
+      if (!s.flags.compras1000) { s.custos.push({ n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }); s.flags.compras1000 = true; }
+      if (!s.alturas) s.alturas = { jose: 86, laura: 108 };
+      if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
+      if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
+      return s;
+    } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
+  }
+  var S = load();
+  var saveTimer = null;
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }, 250);
+  }
+
+  function pd(iso) { var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function fmtUS(v) { return 'US$ ' + Math.round(v).toLocaleString('pt-BR'); }
+  function fmtBR(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+  var DIAS_SEM = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+  var MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+  function tripDays() {
+    var out = [], a = pd(S.inicio), b = pd(S.fim);
+    if (b < a) b = a;
+    for (var d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) out.push(iso(d));
+    return out;
+  }
+
+  function chartColors() {
+    var cs = getComputedStyle(document.documentElement);
+    var arr = [];
+    for (var i = 1; i <= 10; i++) arr.push(cs.getPropertyValue('--chart-' + i).trim());
+    return arr;
+  }
+
+  // ---------- header + countdown ----------
+  function renderHeader() {
+    var a = pd(S.inicio), b = pd(S.fim);
+    document.getElementById('chipDatas').textContent = '📅 ' + a.getDate() + ' ' + MESES[a.getMonth()].slice(0, 3) + ' → ' + b.getDate() + ' ' + MESES[b.getMonth()].slice(0, 3) + ' 2027';
+  }
+  function tickCountdown() {
+    var target = pd(S.inicio); target.setHours(9, 0, 0, 0);
+    var diff = target - new Date();
+    var chip = document.getElementById('chipCount');
+    if (diff <= 0) {
+      var end = pd(S.fim); end.setHours(23, 59, 0, 0);
+      var txt = (new Date() <= end) ? '🎢 Boa viagem! Vocês estão em Orlando' : '✨ Viagem concluída — que venham as memórias';
+      document.getElementById('cdDias').textContent = '0';
+      document.getElementById('cdH').textContent = '0'; document.getElementById('cdM').textContent = '0'; document.getElementById('cdS').textContent = '0';
+      chip.textContent = txt; document.getElementById('cdInfo').textContent = '';
+      return;
+    }
+    var s = Math.floor(diff / 1000);
+    var dias = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), sec = s % 60;
+    document.getElementById('cdDias').textContent = dias.toLocaleString('pt-BR');
+    document.getElementById('cdH').textContent = h; document.getElementById('cdM').textContent = m; document.getElementById('cdS').textContent = sec;
+    chip.textContent = '⏳ faltam ' + dias + ' dias';
+    var sem = Math.floor(dias / 7);
+    document.getElementById('cdInfo').textContent = '≈ ' + sem + ' semanas';
+  }
+
+  // ---------- dashboard ----------
+  function renderDash() {
+    var tot = S.custos.reduce(function (a, c) { return a + (+c.v || 0); }, 0);
+    document.getElementById('stUSD').textContent = fmtUS(tot);
+    document.getElementById('stBRL').textContent = '≈ ' + fmtBR(tot * S.cambio) + ' + 650 mil pontos';
+    document.getElementById('stPP').textContent = fmtUS(tot / PESSOAS);
+    document.getElementById('stPPBRL').textContent = '≈ ' + fmtBR(tot / PESSOAS * S.cambio);
+    var days = tripDays();
+    document.getElementById('stDias').textContent = days.length + ' dias';
+    var parques = days.filter(function (d) { return S.roteiro[d] && S.roteiro[d].t === 'parque'; }).length;
+    document.getElementById('stParques').textContent = parques;
+    document.getElementById('stParquesNote').textContent = 'de ' + days.length + ' — ritmo dia sim, dia não';
+
+    var done = S.checklist.filter(function (i) { return i.ok; }).length;
+    var pct = S.checklist.length ? Math.round(done / S.checklist.length * 100) : 0;
+    document.getElementById('pgPct').textContent = pct + '%';
+    document.getElementById('pgTxt').textContent = done + ' de ' + S.checklist.length + ' itens concluídos';
+    document.getElementById('pgBar').style.width = pct + '%';
+    var next = S.checklist.filter(function (i) { return !i.ok; }).slice(0, 4);
+    var ul = document.getElementById('nextList'); ul.innerHTML = '';
+    next.forEach(function (i) {
+      var li = document.createElement('li');
+      var ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = i.f.split(' (')[0];
+      var tx = document.createElement('span'); tx.textContent = i.t;
+      li.appendChild(ph); li.appendChild(tx); ul.appendChild(li);
+    });
+    if (!next.length) { var li2 = document.createElement('li'); li2.textContent = 'Tudo pronto! 🎉'; ul.appendChild(li2); }
+    renderKeyDates(); renderPessoas();
+  }
+
+  function addDays(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function fmtD(d) { return String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + (d.getFullYear() !== 2027 ? '/' + String(d.getFullYear()).slice(2) : ''); }
+  function renderKeyDates() {
+    var ini = pd(S.inicio);
+    var kds = [
+      { l: 'Semana do Cliente Azul — vigiar voos em pontos', d: new Date(2026, 8, 8) },
+      { l: 'Universal abre calendário 2027 (comprar 3-day)', d: new Date(2026, 9, 23) },
+      { l: 'Azul Friday — janela nº 1 p/ emitir os voos ✈', d: new Date(2026, 10, 13) },
+      { l: 'Black Friday parques — LEGOLAND+Peppa e Universal', d: new Date(2026, 10, 24) },
+      { l: 'Meta: vistos dos 3 em mãos', d: new Date(2026, 11, 31) },
+      { l: 'Emitir as passagens com pontos (limite)', d: new Date(2027, 0, 31) },
+      { l: 'Aniversário VPD — última grande promo de ingressos', d: new Date(2027, 2, 11) },
+      { l: 'Reservas de restaurantes — dia -60, 6h ET', d: addDays(ini, -60) },
+      { l: 'Remedir alturas + reconferir Lightning Lane', d: addDays(ini, -30) },
+      { l: 'Bilhetes de seguro AIG dos 6 (até)', d: addDays(ini, -7) },
+      { l: 'Embarque VCP → MCO ✈', d: ini }
+    ].sort(function (a, b) { return a.d - b.d; });
+    var ul = document.getElementById('kdList'); ul.innerHTML = '';
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    kds.forEach(function (k) {
+      var li = document.createElement('li');
+      var dias = Math.ceil((k.d - hoje) / 86400000);
+      if (dias < 0) li.classList.add('past');
+      else if (dias <= 45) li.classList.add('soon');
+      var dt = document.createElement('span'); dt.className = 'kd-date'; dt.textContent = fmtD(k.d);
+      var tx = document.createElement('span'); tx.textContent = k.l;
+      var lf = document.createElement('span'); lf.className = 'kd-left';
+      lf.textContent = dias < 0 ? 'passou' : (dias === 0 ? 'hoje!' : 'em ' + dias + ' dias');
+      li.appendChild(dt); li.appendChild(tx); li.appendChild(lf); ul.appendChild(li);
+    });
+  }
+  function renderPessoas() {
+    var g = document.getElementById('pesGrid'); g.innerHTML = '';
+    S.pessoas.forEach(function (p) {
+      var box = document.createElement('div'); box.className = 'pes';
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.n;
+      var rl = document.createElement('span'); rl.className = 'role'; rl.textContent = p.r;
+      var bt = document.createElement('button'); bt.className = 'st ' + (p.s === 'ok' ? 'ok' : 'pend');
+      bt.textContent = p.s === 'ok' ? '✓ documentos ok' : '⏳ pendente';
+      bt.setAttribute('aria-label', 'Alternar status de documentos de ' + p.n);
+      bt.addEventListener('click', function () { p.s = (p.s === 'ok' ? 'pend' : 'ok'); save(); renderPessoas(); });
+      box.appendChild(nm); box.appendChild(rl); box.appendChild(bt); g.appendChild(box);
+    });
+  }
+
+  // ---------- custos ----------
+  function renderCustos() {
+    var tot = S.custos.reduce(function (a, c) { return a + (+c.v || 0); }, 0) || 1;
+    var tbody = document.getElementById('custoRows'); tbody.innerHTML = '';
+    S.custos.forEach(function (c, idx) {
+      var tr = document.createElement('tr');
+      var td1 = document.createElement('td');
+      var inN = document.createElement('input'); inN.type = 'text'; inN.value = c.n;
+      inN.addEventListener('input', function () { c.n = inN.value; save(); renderChart(); });
+      td1.appendChild(inN);
+      var td2 = document.createElement('td'); td2.className = 'num';
+      var inV = document.createElement('input'); inV.type = 'number'; inV.min = '0'; inV.step = '50'; inV.value = c.v;
+      inV.addEventListener('input', function () { c.v = +inV.value || 0; save(); refreshNumbers(); });
+      td2.appendChild(inV);
+      var tdR = document.createElement('td'); tdR.className = 'num';
+      var inR = document.createElement('input'); inR.type = 'number'; inR.min = '0'; inR.step = '50';
+      inR.value = c.r || ''; inR.placeholder = '—';
+      inR.setAttribute('aria-label', 'Gasto real: ' + c.n);
+      inR.addEventListener('input', function () { c.r = +inR.value || 0; save(); refreshNumbers(); });
+      tdR.appendChild(inR);
+      var td3 = document.createElement('td'); td3.className = 'num'; td3.dataset.brl = idx;
+      var td4 = document.createElement('td'); td4.className = 'num'; td4.dataset.pct = idx;
+      var tdP = document.createElement('td'); tdP.style.textAlign = 'center';
+      var cbP = document.createElement('input'); cbP.type = 'checkbox'; cbP.checked = !!c.p;
+      cbP.title = 'Marcar como pago'; cbP.setAttribute('aria-label', 'Pago: ' + c.n);
+      cbP.addEventListener('change', function () { c.p = cbP.checked; tr.classList.toggle('paid', c.p); save(); refreshNumbers(); });
+      tdP.appendChild(cbP);
+      var td5 = document.createElement('td'); td5.style.textAlign = 'right';
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.title = 'Remover';
+      del.setAttribute('aria-label', 'Remover ' + c.n);
+      del.addEventListener('click', function () { S.custos.splice(idx, 1); save(); renderCustos(); renderDash(); });
+      td5.appendChild(del);
+      if (c.p) tr.classList.add('paid');
+      tr.appendChild(td1); tr.appendChild(td2); tr.appendChild(tdR); tr.appendChild(td3); tr.appendChild(td4); tr.appendChild(tdP); tr.appendChild(td5);
+      tbody.appendChild(tr);
+    });
+    refreshNumbers();
+  }
+  function refreshNumbers() {
+    var tot = S.custos.reduce(function (a, c) { return a + (+c.v || 0); }, 0);
+    S.custos.forEach(function (c, idx) {
+      var brl = document.querySelector('[data-brl="' + idx + '"]');
+      var pct = document.querySelector('[data-pct="' + idx + '"]');
+      if (brl) brl.textContent = fmtBR((+c.v || 0) * S.cambio);
+      if (pct) pct.textContent = tot ? Math.round((+c.v || 0) / tot * 100) + '%' : '—';
+    });
+    document.getElementById('totUSD').textContent = fmtUS(tot);
+    document.getElementById('totBRL').textContent = fmtBR(tot * S.cambio);
+    var pago = S.custos.reduce(function (a, c) { return a + (c.p ? (+c.v || 0) : 0); }, 0);
+    document.getElementById('pagoUSD').textContent = fmtUS(pago);
+    document.getElementById('faltaUSD').textContent = fmtUS(tot - pago);
+    document.getElementById('faltaBRL').textContent = '(≈ ' + fmtBR((tot - pago) * S.cambio) + ')';
+    var real = S.custos.reduce(function (a, c) { return a + (+c.r || 0); }, 0);
+    document.getElementById('totReal').textContent = real ? fmtUS(real) : '—';
+    var rd = document.getElementById('realDelta');
+    if (real) {
+      var dif = real - tot;
+      rd.textContent = 'Real lançado: ' + fmtUS(real) + ' (' + (dif >= 0 ? '+' : '−') + fmtUS(Math.abs(dif)) + ' vs orçado)';
+      rd.style.color = dif > 0 ? 'var(--danger)' : 'var(--good)';
+    } else { rd.textContent = ''; }
+    renderCofre();
+    document.getElementById('ppUSD').textContent = fmtUS(tot / PESSOAS);
+    document.getElementById('ppBRL').textContent = '≈ ' + fmtBR(tot / PESSOAS * S.cambio);
+    document.getElementById('ppAd').textContent = fmtUS(tot / PESSOAS * 1.1);
+    document.getElementById('ppJose').textContent = fmtUS(tot / PESSOAS * 0.55);
+    renderChart(); renderDash();
+  }
+  function renderChart() {
+    var svg = document.getElementById('donut');
+    var colors = chartColors();
+    var vals = S.custos.map(function (c) { return +c.v || 0; });
+    var tot = vals.reduce(function (a, b) { return a + b; }, 0);
+    svg.innerHTML = '';
+    var leg = document.getElementById('legend'); leg.innerHTML = '';
+    if (!tot) return;
+    var cx = 100, cy = 100, r = 74, sw = 40;
+    var start = -Math.PI / 2;
+    var C = 2 * Math.PI * r;
+    S.custos.forEach(function (c, i) {
+      var frac = (+c.v || 0) / tot;
+      if (frac <= 0) return;
+      var col = colors[i % colors.length];
+      var circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', cx); circle.setAttribute('cy', cy); circle.setAttribute('r', r);
+      circle.setAttribute('fill', 'none'); circle.setAttribute('stroke', col); circle.setAttribute('stroke-width', sw);
+      var dash = Math.max(frac * C - 2, 0.5);
+      circle.setAttribute('stroke-dasharray', dash + ' ' + (C - dash));
+      circle.setAttribute('stroke-dashoffset', -((start + Math.PI / 2) / (2 * Math.PI)) * C);
+      circle.setAttribute('transform', 'rotate(-90 ' + cx + ' ' + cy + ')');
+      svg.appendChild(circle);
+      start += frac * 2 * Math.PI;
+      var row = document.createElement('div'); row.className = 'row';
+      var sw2 = document.createElement('span'); sw2.className = 'sw'; sw2.style.background = col;
+      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = c.n; nm.title = c.n;
+      var vv = document.createElement('span'); vv.className = 'vv'; vv.textContent = fmtUS(c.v) + ' · ' + Math.round(frac * 100) + '%';
+      row.appendChild(sw2); row.appendChild(nm); row.appendChild(vv); leg.appendChild(row);
+    });
+    var t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t1.setAttribute('x', cx); t1.setAttribute('y', cy - 2); t1.setAttribute('text-anchor', 'middle');
+    t1.setAttribute('font-size', '17'); t1.setAttribute('font-weight', '700'); t1.setAttribute('fill', 'currentColor');
+    t1.textContent = fmtUS(tot);
+    var t2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t2.setAttribute('x', cx); t2.setAttribute('y', cy + 17); t2.setAttribute('text-anchor', 'middle');
+    t2.setAttribute('font-size', '11'); t2.setAttribute('fill', 'currentColor'); t2.setAttribute('opacity', '0.6');
+    t2.textContent = '≈ ' + fmtBR(tot * S.cambio);
+    svg.appendChild(t1); svg.appendChild(t2);
+  }
+
+  // ---------- calendário + roteiro ----------
+  var selDay = null;
+  function renderCal() {
+    var days = tripDays();
+    var set = {}; days.forEach(function (d) { set[d] = true; });
+    var months = [];
+    days.forEach(function (d) {
+      var key = d.slice(0, 7);
+      if (months.indexOf(key) < 0) months.push(key);
+    });
+    var wrap = document.getElementById('calWrap'); wrap.innerHTML = '';
+    months.forEach(function (mk) {
+      var y = +mk.slice(0, 4), m = +mk.slice(5, 7) - 1;
+      var box = document.createElement('div'); box.className = 'month';
+      var h = document.createElement('h3'); h.textContent = MESES[m] + ' ' + y; box.appendChild(h);
+      var dow = document.createElement('div'); dow.className = 'dow';
+      ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].forEach(function (l) { var s = document.createElement('span'); s.textContent = l; dow.appendChild(s); });
+      box.appendChild(dow);
+      var grid = document.createElement('div'); grid.className = 'days';
+      var first = new Date(y, m, 1);
+      for (var i = 0; i < first.getDay(); i++) grid.appendChild(document.createElement('span'));
+      var nDays = new Date(y, m + 1, 0).getDate();
+      for (var dn = 1; dn <= nDays; dn++) {
+        var dISO = iso(new Date(y, m, dn));
+        var cell = document.createElement('div'); cell.className = 'd';
+        var num = document.createElement('span'); num.textContent = dn; cell.appendChild(num);
+        if (set[dISO]) {
+          cell.classList.add('trip');
+          var ent = S.roteiro[dISO];
+          var dot = document.createElement('span'); dot.className = 'dot tipo-' + (ent ? ent.t : 'outro');
+          cell.appendChild(dot);
+          cell.title = ent ? ent.d : '';
+          if (selDay === dISO) cell.classList.add('sel');
+          (function (dd) {
+            cell.addEventListener('click', function () { selDay = dd; renderCal(); renderRoteiro(); scrollToDay(dd); });
+          })(dISO);
+        }
+        grid.appendChild(cell);
+      }
+      box.appendChild(grid);
+      wrap.appendChild(box);
+    });
+  }
+  function scrollToDay(d) {
+    var el = document.querySelector('[data-day="' + d + '"]');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function renderRoteiro() {
+    var list = document.getElementById('rotList'); list.innerHTML = '';
+    tripDays().forEach(function (d) {
+      if (!S.roteiro[d]) S.roteiro[d] = { t: 'outro', d: '' };
+      var ent = S.roteiro[d];
+      var row = document.createElement('div'); row.className = 'rot-row'; row.dataset.day = d;
+      if (selDay === d) row.classList.add('today-sel');
+      var dt = pd(d);
+      var lab = document.createElement('span'); lab.className = 'dt';
+      lab.textContent = DIAS_SEM[dt.getDay()] + ' ' + String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+      var sel = document.createElement('select');
+      Object.keys(TIPOS).forEach(function (k) {
+        var o = document.createElement('option'); o.value = k; o.textContent = TIPOS[k];
+        if (ent.t === k) o.selected = true; sel.appendChild(o);
+      });
+      sel.addEventListener('change', function () { ent.t = sel.value; save(); renderCal(); renderDash(); });
+      var inp = document.createElement('input'); inp.type = 'text'; inp.value = ent.d; inp.placeholder = 'O que fazer neste dia…';
+      inp.addEventListener('input', function () { ent.d = inp.value; save(); });
+      inp.addEventListener('change', function () { renderCal(); });
+      row.appendChild(lab); row.appendChild(sel); row.appendChild(inp);
+      list.appendChild(row);
+    });
+  }
+
+  // ---------- checklist ----------
+  function renderCheck() {
+    var box = document.getElementById('phases'); box.innerHTML = '';
+    var fases = [];
+    S.checklist.forEach(function (i) { if (fases.indexOf(i.f) < 0) fases.push(i.f); });
+    fases.forEach(function (f) {
+      var itens = S.checklist.filter(function (i) { return i.f === f; });
+      var done = itens.filter(function (i) { return i.ok; }).length;
+      var ph = document.createElement('div'); ph.className = 'phase';
+      var head = document.createElement('div'); head.className = 'ph-head';
+      var h3 = document.createElement('h3'); h3.textContent = f; h3.style.margin = '0';
+      var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = done + '/' + itens.length;
+      head.appendChild(h3); head.appendChild(pct); ph.appendChild(head);
+      var ul = document.createElement('ul'); ul.className = 'check';
+      itens.forEach(function (i) {
+        var li = document.createElement('li'); if (i.ok) li.classList.add('done');
+        var id = 'ck-' + S.checklist.indexOf(i);
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = i.ok; cb.id = id;
+        cb.addEventListener('change', function () { i.ok = cb.checked; save(); renderCheck(); renderDash(); });
+        var lb = document.createElement('label'); lb.textContent = i.t; lb.setAttribute('for', id);
+        li.appendChild(cb); li.appendChild(lb); ul.appendChild(li);
+      });
+      ph.appendChild(ul); box.appendChild(ph);
+    });
+    var done = S.checklist.filter(function (i) { return i.ok; }).length;
+    document.getElementById('checkResumo').textContent = done + ' de ' + S.checklist.length + ' concluídos';
+  }
+
+  // ---------- compras ----------
+  var PLIST = ['Família', 'Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'];
+  function renderShop() {
+    var list = document.getElementById('shopList'); list.innerHTML = '';
+    S.compras.forEach(function (it, idx) {
+      var row = document.createElement('div'); row.className = 'shop-row' + (it.ok ? ' ok' : '');
+      var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!it.ok;
+      cb.setAttribute('aria-label', 'Comprado: ' + it.t);
+      cb.addEventListener('change', function () { it.ok = cb.checked; save(); renderShop(); });
+      var inT = document.createElement('input'); inT.type = 'text'; inT.value = it.t; inT.placeholder = 'Item…';
+      inT.addEventListener('input', function () { it.t = inT.value; save(); });
+      var sel = document.createElement('select');
+      PLIST.forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; if (it.p === p) o.selected = true; sel.appendChild(o); });
+      sel.setAttribute('aria-label', 'Para quem');
+      sel.addEventListener('change', function () { it.p = sel.value; save(); renderShopBudgets(); });
+      var inV = document.createElement('input'); inV.type = 'number'; inV.min = '0'; inV.step = '10'; inV.value = it.v;
+      inV.setAttribute('aria-label', 'Valor estimado em dólares');
+      inV.addEventListener('input', function () { it.v = +inV.value || 0; save(); renderShopBudgets(); });
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.title = 'Remover';
+      del.setAttribute('aria-label', 'Remover ' + it.t);
+      del.addEventListener('click', function () { S.compras.splice(idx, 1); save(); renderShop(); });
+      row.appendChild(cb); row.appendChild(inT); row.appendChild(sel); row.appendChild(inV); row.appendChild(del);
+      list.appendChild(row);
+    });
+    renderShopBudgets();
+  }
+  function renderShopBudgets() {
+    var fam = 0, per = {};
+    S.compras.forEach(function (it) {
+      var v = +it.v || 0;
+      if (it.p === 'Família') fam += v; else per[it.p] = (per[it.p] || 0) + v;
+    });
+    var rateio = fam / PESSOAS;
+    var g = document.getElementById('shopBudgets'); g.innerHTML = '';
+    ['Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'].forEach(function (nm) {
+      var tot = (per[nm] || 0) + rateio;
+      var b = S.shopBudget || 0;
+      var card = document.createElement('div'); card.className = 'sb-card';
+      var n1 = document.createElement('div'); n1.className = 'nm'; n1.textContent = nm;
+      var v1 = document.createElement('div'); v1.className = 'vv';
+      v1.textContent = fmtUS(tot) + ' de ' + fmtUS(b) + (tot > b ? ' — estourou!' : '');
+      var bar = document.createElement('div'); bar.className = 'bar';
+      var fill = document.createElement('i');
+      fill.style.width = (b ? Math.min(tot / b * 100, 100) : 0) + '%';
+      if (tot > b) fill.className = 'over';
+      bar.appendChild(fill);
+      card.appendChild(n1); card.appendChild(v1); card.appendChild(bar);
+      g.appendChild(card);
+    });
+    var totAll = S.compras.reduce(function (a, it) { return a + (+it.v || 0); }, 0);
+    var totOk = S.compras.reduce(function (a, it) { return a + (it.ok ? (+it.v || 0) : 0); }, 0);
+    document.getElementById('shopTot').textContent = 'Planejado: ' + fmtUS(totAll) + ' de ' + fmtUS((S.shopBudget || 0) * PESSOAS) + ' · já comprado: ' + fmtUS(totOk);
+  }
+  document.getElementById('shopBudget').value = S.shopBudget;
+  document.getElementById('shopBudget').addEventListener('input', function () { S.shopBudget = +this.value || 0; save(); renderShopBudgets(); });
+  document.getElementById('addShop').addEventListener('click', function () { S.compras.push({ t: '', p: 'Família', v: 0, ok: false }); save(); renderShop(); });
+
+  // ---------- cofrinho ----------
+  function cofreMetaEff() {
+    var tot = S.custos.reduce(function (a, c) { return a + (+c.v || 0); }, 0);
+    return S.cofre.meta || Math.round(tot * S.cambio);
+  }
+  function renderCofre() {
+    var meta = cofreMetaEff();
+    var saved = S.cofre.aportes.reduce(function (a, x) { return a + (+x.v || 0); }, 0);
+    var pct = meta ? Math.round(saved / meta * 100) : 0;
+    document.getElementById('cofrePct').textContent = Math.min(pct, 999) + '%';
+    document.getElementById('cofreResumo').textContent = fmtBR2(saved) + ' de ' + fmtBR2(meta);
+    document.getElementById('cofreBar').style.width = Math.min(pct, 100) + '%';
+    var falta = Math.max(meta - saved, 0);
+    var hoje = new Date(); var ini = pd(S.inicio);
+    var meses = Math.max(1, Math.round((ini - hoje) / (30.44 * 86400000)));
+    document.getElementById('cofreRitmo').textContent = falta
+      ? 'Faltam ' + fmtBR2(falta) + ' — ≈ ' + fmtBR2(Math.ceil(falta / meses / 100) * 100) + '/mês nos próximos ' + meses + ' meses'
+      : 'Meta batida! 🎉';
+    var list = document.getElementById('cofreList'); list.innerHTML = '';
+    S.cofre.aportes.slice().sort(function (a, b) { return a.d < b.d ? -1 : 1; }).forEach(function (ap) {
+      var row = document.createElement('div'); row.className = 'cofre-item';
+      var dt = document.createElement('span'); dt.textContent = ap.d ? (ap.d.slice(5, 7) + '/' + ap.d.slice(0, 4)) : '—';
+      var vv = document.createElement('b'); vv.textContent = fmtBR2(+ap.v || 0);
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Remover aporte');
+      del.addEventListener('click', function () { S.cofre.aportes.splice(S.cofre.aportes.indexOf(ap), 1); save(); renderCofre(); });
+      row.appendChild(dt); row.appendChild(vv); row.appendChild(del); list.appendChild(row);
+    });
+    document.getElementById('stCofre').textContent = Math.min(pct, 999) + '%';
+    document.getElementById('stCofreNote').textContent = fmtBR2(saved) + ' guardados';
+  }
+  function fmtBR2(v) { return 'R$ ' + Math.round(v).toLocaleString('pt-BR'); }
+  document.getElementById('cofreMeta').value = S.cofre.meta || '';
+  document.getElementById('cofreMeta').addEventListener('input', function () { S.cofre.meta = +this.value || 0; save(); renderCofre(); });
+  document.getElementById('apMes').value = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
+  document.getElementById('addAporte').addEventListener('click', function () {
+    var v = +document.getElementById('apValor').value || 0;
+    if (!v) return;
+    S.cofre.aportes.push({ d: document.getElementById('apMes').value, v: v });
+    document.getElementById('apValor').value = '';
+    save(); renderCofre();
+  });
+
+  // ---------- guia: alturas ----------
+  var CORTES = [
+    { cm: 0, txt: 'Sem altura mínima — maioria da Fantasyland, Pirates, Safari, Na’vi River, Toy Story Mania, Frozen, Remy, Seuss Landing, DreamWorks Land' },
+    { cm: 81, txt: 'Tomorrowland Speedway, Alien Swirling Saucers' },
+    { cm: 86, txt: 'Yoshi’s Adventure, E.T. Adventure' },
+    { cm: 89, txt: 'The Barnstormer' },
+    { cm: 92, txt: 'Trolls Trollercoaster, Cat in the Hat, Flight of the Hippogriff, Pteranodon Flyers' },
+    { cm: 97, txt: 'Seven Dwarfs, Big Thunder, Slinky Dog, Millennium Falcon, Kali River Rapids' },
+    { cm: 102, txt: 'Soarin’, Test Track, Rise of the Resistance, Tower of Terror, Tiana’s, Mario Kart, Mine-Cart Madness, Hiccup’s Wing Gliders' },
+    { cm: 107, txt: 'Guardians of the Galaxy: Cosmic Rewind' },
+    { cm: 112, txt: 'Space Mountain, Expedition Everest, Flight of Passage, Mission: SPACE' },
+    { cm: 122, txt: 'TRON, Rock ’n’ Roller Coaster, Hagrid’s, Stardust Racers' }
+  ];
+  function pill(nome, passa) {
+    var s = document.createElement('span');
+    s.className = 'pill ' + (passa ? 'sim' : 'nao');
+    s.textContent = nome + (passa ? ' ✓' : ' ✗');
+    return s;
+  }
+  function renderAlturas() {
+    var g = document.getElementById('altGrid'); g.innerHTML = '';
+    CORTES.forEach(function (c) {
+      var row = document.createElement('div'); row.className = 'alt-row';
+      var cut = document.createElement('span'); cut.className = 'cut'; cut.textContent = c.cm ? c.cm + ' cm' : 'livre';
+      var right = document.createElement('div');
+      var tx = document.createElement('div'); tx.textContent = c.txt;
+      var who = document.createElement('div'); who.className = 'who';
+      who.appendChild(pill('José', S.alturas.jose >= c.cm));
+      who.appendChild(pill('Laura', S.alturas.laura >= c.cm));
+      right.appendChild(tx); right.appendChild(who);
+      row.appendChild(cut); row.appendChild(right);
+      g.appendChild(row);
+    });
+  }
+  document.getElementById('altJose').value = S.alturas.jose;
+  document.getElementById('altLaura').value = S.alturas.laura;
+  document.getElementById('altJose').addEventListener('input', function () { S.alturas.jose = +this.value || 0; save(); renderAlturas(); });
+  document.getElementById('altLaura').addEventListener('input', function () { S.alturas.laura = +this.value || 0; save(); renderAlturas(); });
+
+  // ---------- malas ----------
+  var MLIST = ['Todos', 'Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'];
+  var selQuem = document.getElementById('malaQuem');
+  MLIST.forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; selQuem.appendChild(o); });
+  function renderMalas() {
+    var box = document.getElementById('malasGroups'); box.innerHTML = '';
+    MLIST.forEach(function (p) {
+      var itens = S.malas.filter(function (m) { return m.p === p; });
+      if (!itens.length) return;
+      var done = itens.filter(function (m) { return m.ok; }).length;
+      var ph = document.createElement('div'); ph.className = 'phase';
+      var head = document.createElement('div'); head.className = 'ph-head';
+      var h3 = document.createElement('h3'); h3.textContent = (p === 'Todos' ? '👨‍👩‍👧‍👦 Todos' : p); h3.style.margin = '0';
+      var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = done + '/' + itens.length;
+      head.appendChild(h3); head.appendChild(pct); ph.appendChild(head);
+      var ul = document.createElement('ul'); ul.className = 'check';
+      itens.forEach(function (m) {
+        var li = document.createElement('li'); if (m.ok) li.classList.add('done');
+        var id = 'ml-' + S.malas.indexOf(m);
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = m.ok; cb.id = id;
+        cb.addEventListener('change', function () { m.ok = cb.checked; save(); renderMalas(); });
+        var lb = document.createElement('label'); lb.textContent = m.t; lb.setAttribute('for', id); lb.style.flex = '1';
+        var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+        del.style.cssText = 'background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;';
+        del.setAttribute('aria-label', 'Remover ' + m.t);
+        del.addEventListener('click', function () { S.malas.splice(S.malas.indexOf(m), 1); save(); renderMalas(); });
+        li.appendChild(cb); li.appendChild(lb); li.appendChild(del); ul.appendChild(li);
+      });
+      ph.appendChild(ul); box.appendChild(ph);
+    });
+    var done = S.malas.filter(function (m) { return m.ok; }).length;
+    document.getElementById('malasResumo').textContent = done + ' de ' + S.malas.length + ' na mala';
+  }
+  document.getElementById('addMala').addEventListener('click', function () {
+    var t = document.getElementById('malaNovo').value.trim();
+    if (!t) return;
+    S.malas.push({ p: selQuem.value, t: t, ok: false });
+    document.getElementById('malaNovo').value = '';
+    save(); renderMalas();
+  });
+
+  // ---------- config, export, tabs ----------
+  document.getElementById('cambio').value = S.cambio;
+  document.getElementById('cambio').addEventListener('input', function () { S.cambio = +this.value || 5.5; save(); refreshNumbers(); });
+  document.getElementById('dtIni').value = S.inicio;
+  document.getElementById('dtFim').value = S.fim;
+  document.getElementById('dtIni').addEventListener('change', function () { if (this.value) { S.inicio = this.value; save(); renderAll(); } });
+  document.getElementById('dtFim').addEventListener('change', function () { if (this.value) { S.fim = this.value; save(); renderAll(); } });
+  document.getElementById('addRow').addEventListener('click', function () { S.custos.push({ n: 'Nova categoria', v: 0 }); save(); renderCustos(); });
+  document.getElementById('btnReset').addEventListener('click', function () {
+    if (confirm('Restaurar todos os dados para o padrão do plano? Suas edições serão perdidas.')) {
+      S = JSON.parse(JSON.stringify(DEF)); save(); location.reload();
+    }
+  });
+  document.getElementById('btnExport').addEventListener('click', function () {
+    var blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'disney2027-dados.json'; a.click();
+    URL.revokeObjectURL(a.href);
+  });
+  document.getElementById('btnImport').addEventListener('change', function () {
+    var f = this.files[0]; if (!f) return;
+    var r = new FileReader();
+    r.onload = function () {
+      try { var s = JSON.parse(r.result); if (s.custos && s.checklist) { S = s; save(); location.reload(); } else alert('Arquivo inválido.'); }
+      catch (e) { alert('Não consegui ler esse arquivo.'); }
+    };
+    r.readAsText(f);
+  });
+  document.querySelectorAll('nav.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('nav.tabs button').forEach(function (x) { x.classList.remove('on'); });
+      document.querySelectorAll('section.tab').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+      document.getElementById('tab-' + b.dataset.tab).classList.add('on');
+    });
+  });
+
+  function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderCofre(); tickCountdown(); }
+  renderAll();
+  setInterval(tickCountdown, 1000);
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { renderChart(); });
+  }
+  new MutationObserver(function () { renderChart(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>
