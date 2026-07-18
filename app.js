@@ -24,6 +24,7 @@
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
     gastos: [],
+    paradas: {},
     malas: [
       { p: 'Todos', t: 'Passaportes + vistos', ok: false },
       { p: 'Todos', t: 'Certidões de nascimento das crianças (cópias)', ok: false },
@@ -180,6 +181,7 @@
       if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
       if (!s.diaCheck) s.diaCheck = {};
       if (!s.gastos) s.gastos = [];
+      if (!s.paradas) s.paradas = {};
       return s;
     } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
   }
@@ -1302,7 +1304,13 @@
       if (on && focusBtn) x.focus();
     });
     document.querySelectorAll('section.tab').forEach(function (x) { x.classList.toggle('on', x.id === 'tab-' + name); });
-    if (name === 'hoje') renderDia();
+    if (name === 'hoje') {
+      renderDia();
+      // o Leaflet precisa recalcular o tamanho quando o container aparece
+      setTimeout(function () {
+        if (mapa) { mapa.invalidateSize(); renderMapa(paradasDoDia(diaSel)); }
+      }, 80);
+    }
     try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
   }
   tabBtns.forEach(function (b) {
@@ -1323,6 +1331,162 @@
     try { t = localStorage.getItem(TAB_KEY); } catch (e) {}
     if (t && document.getElementById('tab-' + t)) setTab(t);
   }
+
+  // ---------- paradas do dia + mapa ----------
+  var PLACES = [
+    { k: 'hotel', n: '🏨 Celebration Suites (base)', lat: 28.3345, lng: -81.5195 },
+    { k: 'magic', n: '🏰 Magic Kingdom', lat: 28.4177, lng: -81.5812 },
+    { k: 'epcot', n: '🌍 EPCOT', lat: 28.3747, lng: -81.5494 },
+    { k: 'hollywood', n: '🎬 Hollywood Studios', lat: 28.3575, lng: -81.5583 },
+    { k: 'animal', n: '🦁 Animal Kingdom', lat: 28.3553, lng: -81.5901 },
+    { k: 'epic', n: '🌌 Epic Universe', lat: 28.4157, lng: -81.4590 },
+    { k: 'universal', n: '🎢 Universal Studios', lat: 28.4794, lng: -81.4685 },
+    { k: 'islands', n: '🦖 Islands of Adventure', lat: 28.4722, lng: -81.4700 },
+    { k: 'citywalk', n: '🍔 Universal CityWalk', lat: 28.4743, lng: -81.4678 },
+    { k: 'legoland', n: '🧱 LEGOLAND Florida', lat: 27.9898, lng: -81.6902 },
+    { k: 'peppa', n: '🐷 Peppa Pig Theme Park', lat: 27.9880, lng: -81.6910 },
+    { k: 'springs', n: '🎆 Disney Springs', lat: 28.3704, lng: -81.5194 },
+    { k: 'vineland', n: '🛍️ Vineland Premium Outlets', lat: 28.3878, lng: -81.4903 },
+    { k: 'idrive', n: '🛍️ International Premium Outlets', lat: 28.4743, lng: -81.4515 },
+    { k: 'oldtown', n: '🎡 Old Town Kissimmee', lat: 28.3332, lng: -81.5216 },
+    { k: 'walmart', n: '🛒 Walmart Supercenter (US-192)', lat: 28.3335, lng: -81.5090 },
+    { k: 'mco', n: '✈️ Aeroporto de Orlando (MCO)', lat: 28.4312, lng: -81.3081 }
+  ];
+  var INFER = [
+    [/magic kingdom/i, 'magic'], [/epcot/i, 'epcot'], [/hollywood/i, 'hollywood'],
+    [/animal kingdom/i, 'animal'], [/epic/i, 'epic'], [/universal studios/i, 'universal'],
+    [/islands/i, 'islands'], [/legoland/i, 'legoland'], [/peppa/i, 'peppa'],
+    [/disney springs/i, 'springs'], [/vineland/i, 'vineland'], [/old town/i, 'oldtown'],
+    [/walmart/i, 'walmart'], [/voo|mco|aeroporto/i, 'mco'],
+    [/celebration suites|check-in/i, 'hotel'], [/piscina|descanso|folga/i, 'hotel']
+  ];
+  function place(k) {
+    for (var i = 0; i < PLACES.length; i++) if (PLACES[i].k === k) return PLACES[i];
+    return null;
+  }
+  // sem paradas salvas, o mapa se vira com o texto do roteiro
+  function paradasInferidas(d) {
+    var ent = S.roteiro[d];
+    if (!ent || !ent.d) return [];
+    var out = [], seen = {};
+    INFER.forEach(function (rule) {
+      var m = ent.d.match(rule[0]);
+      if (m && !seen[rule[1]]) { seen[rule[1]] = true; out.push({ pos: m.index, st: { h: '', k: rule[1], o: '', auto: true } }); }
+    });
+    return out.sort(function (a, b) { return a.pos - b.pos; }).map(function (x) { return x.st; });
+  }
+  function paradasDoDia(d) {
+    return (S.paradas[d] && S.paradas[d].length) ? S.paradas[d] : paradasInferidas(d);
+  }
+  // ao editar pela primeira vez, as sugestões viram paradas de verdade
+  function materializaParadas(d) {
+    if (!S.paradas[d] || !S.paradas[d].length) {
+      S.paradas[d] = paradasInferidas(d).map(function (st) { return { h: st.h, k: st.k, o: st.o }; });
+    }
+    return S.paradas[d];
+  }
+  function havKm(a, b) {
+    var R = 6371, dLat = (b.lat - a.lat) * Math.PI / 180, dLng = (b.lng - a.lng) * Math.PI / 180;
+    var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  }
+  var mapa = null, mapaLayer = null;
+  function renderMapa(stops) {
+    var el = document.getElementById('mapa');
+    if (!window.L) { el.style.display = 'none'; return; }
+    var pts = [];
+    stops.forEach(function (st) { var p = place(st.k); if (p) pts.push(p); });
+    if (!mapa) {
+      if (!document.getElementById('tab-hoje').classList.contains('on')) return;
+      mapa = L.map('mapa', { scrollWheelZoom: false });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      }).addTo(mapa);
+      mapaLayer = L.layerGroup().addTo(mapa);
+    }
+    mapaLayer.clearLayers();
+    if (!pts.length) { mapa.setView([28.39, -81.51], 10); return; }
+    var latlngs = [];
+    pts.forEach(function (p, i) {
+      var ll = [p.lat, p.lng]; latlngs.push(ll);
+      var icon = L.divIcon({ className: '', html: '<div class="pin-num">' + (i + 1) + '</div>', iconSize: [26, 26], iconAnchor: [13, 13] });
+      L.marker(ll, { icon: icon })
+        .bindPopup('<b>' + p.n + '</b><br><a href="https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng + '" target="_blank" rel="noopener">🧭 Navegar até aqui</a>')
+        .addTo(mapaLayer);
+    });
+    if (latlngs.length > 1) L.polyline(latlngs, { color: '#5a48c9', weight: 3, dashArray: '6 8', opacity: .8 }).addTo(mapaLayer);
+    mapa.fitBounds(latlngs, { padding: [36, 36], maxZoom: 15 });
+  }
+  function renderParadas() {
+    var stops = paradasDoDia(diaSel);
+    var isAuto = !(S.paradas[diaSel] && S.paradas[diaSel].length);
+    var list = document.getElementById('paradasList'); list.innerHTML = '';
+    var prev = null;
+    stops.forEach(function (st, i) {
+      var p = place(st.k);
+      if (prev && p) {
+        var d = document.createElement('div'); d.className = 'parada-dist';
+        d.textContent = '↓ ≈ ' + (Math.round(havKm(prev, p) * 10) / 10).toLocaleString('pt-BR') + ' km em linha reta';
+        list.appendChild(d);
+      }
+      if (p) prev = p;
+      var row = document.createElement('div'); row.className = 'parada-row' + (isAuto ? ' auto' : '');
+      var num = document.createElement('span'); num.className = 'num'; num.textContent = i + 1;
+      var hh = document.createElement('input'); hh.type = 'time'; hh.value = st.h || '';
+      hh.setAttribute('aria-label', 'Horário da parada');
+      var sel = document.createElement('select');
+      sel.setAttribute('aria-label', 'Lugar da parada');
+      PLACES.forEach(function (pl) {
+        var o = document.createElement('option'); o.value = pl.k; o.textContent = pl.n;
+        if (st.k === pl.k) o.selected = true; sel.appendChild(o);
+      });
+      var oo = document.createElement('option'); oo.value = ''; oo.textContent = '📍 Outro lugar (sem pino)';
+      if (!st.k) oo.selected = true; sel.appendChild(oo);
+      var obs = document.createElement('input'); obs.type = 'text'; obs.value = st.o || ''; obs.placeholder = 'nota — ex.: fogos 21h, almoço 12h…';
+      obs.setAttribute('aria-label', 'Nota da parada');
+      var acts = document.createElement('span'); acts.className = 'acts';
+      if (p) {
+        var nav = document.createElement('a'); nav.textContent = '🧭'; nav.title = 'Navegar (Google Maps)';
+        nav.href = 'https://www.google.com/maps/dir/?api=1&destination=' + p.lat + ',' + p.lng;
+        nav.target = '_blank'; nav.rel = 'noopener';
+        acts.appendChild(nav);
+      }
+      function edita(fn) {
+        var arr = materializaParadas(diaSel);
+        fn(arr, Math.min(i, arr.length - 1));
+        save(); renderParadas();
+      }
+      hh.addEventListener('change', function () { edita(function (arr, ix) { arr[ix].h = hh.value; }); });
+      sel.addEventListener('change', function () { edita(function (arr, ix) { arr[ix].k = sel.value; }); });
+      obs.addEventListener('change', function () { edita(function (arr, ix) { arr[ix].o = obs.value; }); });
+      var up = document.createElement('button'); up.textContent = '↑'; up.title = 'Mover para cima';
+      up.disabled = i === 0;
+      up.addEventListener('click', function () { edita(function (arr, ix) { if (ix > 0) { var t = arr[ix - 1]; arr[ix - 1] = arr[ix]; arr[ix] = t; } }); });
+      var dn = document.createElement('button'); dn.textContent = '↓'; dn.title = 'Mover para baixo';
+      dn.disabled = i === stops.length - 1;
+      dn.addEventListener('click', function () { edita(function (arr, ix) { if (ix < arr.length - 1) { var t = arr[ix + 1]; arr[ix + 1] = arr[ix]; arr[ix] = t; } }); });
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕'; del.title = 'Remover parada';
+      del.addEventListener('click', function () {
+        var arr = materializaParadas(diaSel);
+        var removed = arr.splice(Math.min(i, arr.length - 1), 1)[0];
+        save(); renderParadas();
+        showUndo('Parada removida', function () { S.paradas[diaSel].splice(Math.min(i, S.paradas[diaSel].length), 0, removed); save(); renderParadas(); });
+      });
+      acts.appendChild(up); acts.appendChild(dn); acts.appendChild(del);
+      row.appendChild(num); row.appendChild(hh); row.appendChild(sel); row.appendChild(obs); row.appendChild(acts);
+      list.appendChild(row);
+    });
+    document.getElementById('paradasResumo').textContent = stops.length ? '— ' + stops.length + ' parada' + (stops.length > 1 ? 's' : '') : '';
+    document.getElementById('paradasNota').textContent = stops.length
+      ? (isAuto ? 'Sugeridas pelo roteiro do dia — edite qualquer campo para assumir a lista. ' : '') + 'O 🧭 abre o GPS; o mapa precisa de internet (as paradas funcionam offline).'
+      : 'Sem paradas — toque em "+ Adicionar parada" ou escreva o plano do dia na aba Agenda que eu sugiro os lugares.';
+    renderMapa(stops);
+  }
+  document.getElementById('addParada').addEventListener('click', function () {
+    var arr = materializaParadas(diaSel);
+    arr.push({ h: '', k: arr.length ? '' : 'hotel', o: '' });
+    save(); renderParadas();
+  });
 
   // ---------- gastos da viagem ----------
   // Cada lançamento vira "real" na linha de custo correspondente (por
@@ -1453,6 +1617,7 @@
       document.getElementById('diaMochilaResumo').textContent = '— ' + done + ' de ' + DIA_MOCHILA.length;
     }
 
+    renderParadas();
     renderDiaGastos();
     document.getElementById('diaAlturas').textContent = 'José ' + S.alturas.jose + ' cm · Laura ' + S.alturas.laura + ' cm';
     var prox = days[i + 1];
