@@ -133,7 +133,16 @@
   var saveTimer = null;
   function save() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }, 250);
+    saveTimer = setTimeout(function () {
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+      markDirty();
+    }, 250);
+  }
+  // grava na hora — obrigatório antes de location.reload(), que mataria o timer
+  function saveNow() {
+    clearTimeout(saveTimer);
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    markDirty();
   }
 
   function pd(iso) { var p = iso.split('-'); return new Date(+p[0], +p[1] - 1, +p[2]); }
@@ -219,6 +228,7 @@
     document.getElementById('chipDatas').textContent = '📅 ' + a.getDate() + ' ' + MESES[a.getMonth()].slice(0, 3) + ' → ' + b.getDate() + ' ' + MESES[b.getMonth()].slice(0, 3) + ' 2027';
   }
   function tickCountdown() {
+    if (sync && sync.gistId && new Date().getSeconds() === 0) renderSyncUi();
     var target = pd(S.inicio); target.setHours(9, 0, 0, 0);
     var diff = target - new Date();
     var chip = document.getElementById('chipCount');
@@ -874,6 +884,178 @@
     save(); renderMalas();
   });
 
+  // ---------- sincronização entre aparelhos (GitHub Gist) ----------
+  // O plano vive num gist secreto da conta do dono do token; todos os
+  // aparelhos da família usam o MESMO token. O token fica só neste
+  // navegador (chave própria no localStorage) — nunca entra em S, no JSON
+  // exportado ou no link compartilhado.
+  var SYNC_KEY = 'disney2027-sync';
+  var GIST_FILE = 'disney2027-dados.json';
+  var sync = null;
+  try { sync = JSON.parse(localStorage.getItem(SYNC_KEY) || 'null'); } catch (e) {}
+  var syncBusy = false, pushTimer = null, lastPullAt = 0;
+
+  function saveSync() {
+    try {
+      if (sync) localStorage.setItem(SYNC_KEY, JSON.stringify(sync));
+      else localStorage.removeItem(SYNC_KEY);
+    } catch (e) {}
+  }
+  function ghHeaders() {
+    return { 'Authorization': 'Bearer ' + sync.token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  }
+  function markDirty() {
+    if (!sync || !sync.gistId) return;
+    sync.dirty = true; saveSync(); renderSyncUi();
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () { syncNow(false); }, 3000);
+  }
+  function syncLabel() {
+    if (syncBusy) return '☁️ sincronizando…';
+    if (sync.error) return '☁️ ⚠ ' + sync.error;
+    if (sync.dirty) return '☁️ alterações a enviar';
+    if (sync.lastSync) {
+      var min = Math.round((Date.now() - sync.lastSync) / 60000);
+      return '☁️ sincronizado ' + (min < 1 ? 'agora' : (min < 60 ? 'há ' + min + ' min' : 'há ' + Math.round(min / 60) + ' h'));
+    }
+    return '☁️ conectado';
+  }
+  function renderSyncUi() {
+    var on = !!(sync && sync.gistId);
+    var chip = document.getElementById('chipSync');
+    chip.hidden = !on;
+    if (on) chip.textContent = syncLabel();
+    document.getElementById('syncOff').hidden = on;
+    document.getElementById('syncHelp').hidden = on;
+    document.getElementById('syncOn').hidden = !on;
+    document.getElementById('syncStatus').textContent = on
+      ? syncLabel() + ' · gist ' + sync.gistId + ' · use o mesmo token nos outros aparelhos da família'
+      : 'Não conectado — as edições ficam só neste navegador. Conecte para a família inteira ver e editar o mesmo plano.';
+  }
+  function applyRemote(g) {
+    try {
+      var f = g.files && g.files[GIST_FILE];
+      if (!f) return false;
+      var apply = function (content) {
+        var s = JSON.parse(content);
+        if (!s.custos || !s.checklist) return false;
+        S = s;
+        try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+        sync.remoteUpdatedAt = g.updated_at; sync.dirty = false; sync.lastSync = Date.now(); sync.error = null;
+        saveSync();
+        refreshInputs(); renderAll(); renderSyncUi();
+        return true;
+      };
+      if (f.truncated && f.raw_url) {
+        fetch(f.raw_url).then(function (r) { return r.text(); }).then(apply);
+        return true;
+      }
+      return apply(f.content);
+    } catch (e) { return false; }
+  }
+  // Campos definidos uma única vez na inicialização precisam ser
+  // re-hidratados quando o estado troca por baixo deles (pull da nuvem)
+  function refreshInputs() {
+    document.getElementById('cambio').value = S.cambio;
+    document.getElementById('dtIni').value = S.inicio;
+    document.getElementById('dtFim').value = S.fim;
+    document.getElementById('shopBudget').value = S.shopBudget;
+    document.getElementById('cofreMeta').value = S.cofre.meta || '';
+    document.getElementById('altJose').value = S.alturas.jose;
+    document.getElementById('altLaura').value = S.alturas.laura;
+  }
+  function doPush() {
+    if (!sync || !sync.gistId) return;
+    syncBusy = true; renderSyncUi();
+    var files = {}; files[GIST_FILE] = { content: JSON.stringify(S, null, 2) };
+    return fetch('https://api.github.com/gists/' + sync.gistId, { method: 'PATCH', headers: ghHeaders(), body: JSON.stringify({ files: files }) })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (g) {
+        sync.remoteUpdatedAt = g.updated_at; sync.dirty = false; sync.lastSync = Date.now(); sync.error = null;
+        saveSync(); syncBusy = false; renderSyncUi();
+      })
+      .catch(function () { syncBusy = false; sync.error = 'falha ao enviar — tento de novo ao salvar'; renderSyncUi(); });
+  }
+  function syncNow(showToasts) {
+    if (!sync || !sync.gistId || syncBusy) return;
+    syncBusy = true; sync.error = null; renderSyncUi();
+    lastPullAt = Date.now();
+    fetch('https://api.github.com/gists/' + sync.gistId, { headers: ghHeaders() })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (g) {
+        syncBusy = false;
+        if (g.updated_at !== sync.remoteUpdatedAt) {
+          if (sync.dirty && !confirm('Outro aparelho salvou o plano depois das suas edições. Carregar a versão mais recente? (Cancelar mantém a sua e sobrescreve a da nuvem)')) {
+            doPush(); return;
+          }
+          if (applyRemote(g)) { if (showToasts) showToast('☁️ Plano atualizado da nuvem'); }
+          else { sync.error = 'plano da nuvem ilegível'; renderSyncUi(); }
+        } else if (sync.dirty) {
+          doPush();
+        } else {
+          sync.lastSync = Date.now(); saveSync(); renderSyncUi();
+        }
+      })
+      .catch(function () { syncBusy = false; sync.error = 'sem conexão'; renderSyncUi(); });
+  }
+  function connectSync() {
+    var token = document.getElementById('syncToken').value.trim();
+    if (!token) { showToast('Cole o token do GitHub para conectar'); return; }
+    syncBusy = true;
+    document.getElementById('syncStatus').textContent = 'Conectando…';
+    var hdrs = { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json' };
+    fetch('https://api.github.com/gists?per_page=100', { headers: hdrs })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (list) {
+        var found = null;
+        (list || []).forEach(function (g) { if (!found && g.files && g.files[GIST_FILE]) found = g; });
+        sync = { token: token, gistId: null, remoteUpdatedAt: null, dirty: false, lastSync: null, error: null };
+        if (found) {
+          sync.gistId = found.id; saveSync();
+          return fetch('https://api.github.com/gists/' + found.id, { headers: ghHeaders() })
+            .then(function (r) { return r.json(); })
+            .then(function (g) {
+              syncBusy = false;
+              if (confirm('Encontrei um plano já sincronizado na nuvem. Carregar aqui neste aparelho? (Cancelar envia os dados DESTE aparelho para a nuvem)')) {
+                if (!applyRemote(g)) { sync.error = 'plano da nuvem ilegível'; renderSyncUi(); return; }
+              } else {
+                sync.remoteUpdatedAt = g.updated_at; saveSync();
+                doPush();
+              }
+              document.getElementById('syncToken').value = '';
+              showToast('☁️ Sincronização ativada'); renderSyncUi();
+            });
+        }
+        var files = {}; files[GIST_FILE] = { content: JSON.stringify(S, null, 2) };
+        return fetch('https://api.github.com/gists', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ description: 'Planejador Disney 2027 — dados sincronizados', public: false, files: files })
+        })
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (g) {
+            syncBusy = false;
+            sync.gistId = g.id; sync.remoteUpdatedAt = g.updated_at; sync.lastSync = Date.now();
+            saveSync();
+            document.getElementById('syncToken').value = '';
+            showToast('☁️ Sincronização ativada — gist secreto criado'); renderSyncUi();
+          });
+      })
+      .catch(function () {
+        syncBusy = false; sync = null; saveSync();
+        renderSyncUi();
+        document.getElementById('syncStatus').textContent = '⚠ Não conectou — confira o token (precisa do escopo gist) e a internet.';
+      });
+  }
+  document.getElementById('btnSyncConnect').addEventListener('click', connectSync);
+  document.getElementById('btnSyncNow').addEventListener('click', function () { syncNow(true); });
+  document.getElementById('chipSync').addEventListener('click', function () { syncNow(true); });
+  document.getElementById('btnSyncOff').addEventListener('click', function () {
+    if (confirm('Desconectar a sincronização neste aparelho? O gist na nuvem continua intacto.')) {
+      sync = null; saveSync(); renderSyncUi();
+    }
+  });
+
   // ---------- compartilhar por link ----------
   function b64urlEncode(buf) {
     var u8 = new Uint8Array(buf), s = '';
@@ -979,8 +1161,10 @@
   document.getElementById('dtFim').addEventListener('change', function () { if (this.value) { S.fim = this.value; pruneRoteiro(); save(); renderAll(); } });
   document.getElementById('addRow').addEventListener('click', function () { S.custos.push({ n: 'Nova categoria', v: 0 }); save(); renderCustos(); });
   document.getElementById('btnReset').addEventListener('click', function () {
-    if (confirm('Restaurar todos os dados para o padrão do plano? Suas edições serão perdidas.')) {
-      S = JSON.parse(JSON.stringify(DEF)); save(); location.reload();
+    var aviso = 'Restaurar todos os dados para o padrão do plano? Suas edições serão perdidas.';
+    if (sync && sync.gistId) aviso += ' Como a sincronização está ativa, o padrão também será enviado para a nuvem da família.';
+    if (confirm(aviso)) {
+      S = JSON.parse(JSON.stringify(DEF)); saveNow(); location.reload();
     }
   });
   document.getElementById('btnExport').addEventListener('click', doExport);
@@ -988,7 +1172,7 @@
     var f = this.files[0]; if (!f) return;
     var r = new FileReader();
     r.onload = function () {
-      try { var s = JSON.parse(r.result); if (s.custos && s.checklist) { S = s; save(); location.reload(); } else alert('Arquivo inválido.'); }
+      try { var s = JSON.parse(r.result); if (s.custos && s.checklist) { S = s; saveNow(); location.reload(); } else alert('Arquivo inválido.'); }
       catch (e) { alert('Não consegui ler esse arquivo.'); }
     };
     r.readAsText(f);
@@ -1047,11 +1231,17 @@
   maybeBackupBanner();
   alertKeyDates();
   fetchCambio(false);
+  renderSyncUi();
+  syncNow(false);
 
   var cdTimer = setInterval(tickCountdown, 1000);
   document.addEventListener('visibilitychange', function () {
     if (cdTimer) { clearInterval(cdTimer); cdTimer = null; }
-    if (!document.hidden) { tickCountdown(); cdTimer = setInterval(tickCountdown, 1000); }
+    if (!document.hidden) {
+      tickCountdown(); cdTimer = setInterval(tickCountdown, 1000);
+      // voltou para o app: puxa da nuvem se a última checagem já envelheceu
+      if (sync && sync.gistId && Date.now() - lastPullAt > 60000) syncNow(false);
+    }
   });
 
   if (window.matchMedia) {

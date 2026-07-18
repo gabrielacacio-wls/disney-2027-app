@@ -166,7 +166,74 @@ const { chromium } = require('playwright');
   check('alerta de prazo aparece ao abrir (embarque em 5 dias)', alertText.includes('⏰'), alertText.slice(0, 80));
   await ctx2.close();
 
-  // 16. mobile: viewport funciona, nav fixa, sem scroll horizontal
+  // 16. sincronização via gist (API do GitHub mockada)
+  const ctx3 = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const p4 = await ctx3.newPage();
+  p4.on('dialog', d => d.accept());
+  let gist = null; const patches = [];
+  await p4.route('https://api.github.com/**', route => {
+    const req = route.request(); const url = req.url(); const m = req.method();
+    if (m === 'GET' && url.includes('/gists?')) return route.fulfill({ json: gist ? [gist] : [] });
+    if (m === 'POST' && url.endsWith('/gists')) {
+      const body = JSON.parse(req.postData());
+      gist = { id: 'g123', updated_at: '2026-07-18T10:00:00Z', files: { 'disney2027-dados.json': { content: body.files['disney2027-dados.json'].content } } };
+      return route.fulfill({ json: gist });
+    }
+    if (m === 'GET' && url.includes('/gists/g123')) return route.fulfill({ json: gist });
+    if (m === 'PATCH' && url.includes('/gists/g123')) {
+      const body = JSON.parse(req.postData());
+      gist.files['disney2027-dados.json'].content = body.files['disney2027-dados.json'].content;
+      gist.updated_at = '2026-07-18T10:0' + Math.min(9, 1 + patches.length) + ':00Z';
+      patches.push(body);
+      return route.fulfill({ json: gist });
+    }
+    return route.fulfill({ status: 404, json: {} });
+  });
+  await p4.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p4.waitForTimeout(800);
+  await p4.click('#tabbtn-check');
+  await p4.fill('#syncToken', 'ghp_teste_fake');
+  await p4.click('#btnSyncConnect');
+  await p4.waitForTimeout(800);
+  const syncSt = await p4.textContent('#syncStatus');
+  check('sync: conecta e cria o gist', syncSt.includes('g123'), syncSt.slice(0, 70));
+  const chipSync = await p4.locator('#chipSync').isVisible();
+  check('sync: chip aparece no cabeçalho', chipSync);
+  const offHidden = await p4.locator('#syncOff').isHidden();
+  const onVisible = await p4.locator('#syncOn').isVisible();
+  check('sync: UI alterna conectado/desconectado', offHidden && onVisible, `offHidden=${offHidden} onVisible=${onVisible}`);
+  await p4.click('#tabbtn-custos');
+  await p4.fill('#cambio', '6');
+  await p4.waitForTimeout(4200);
+  const pushed = patches.length >= 1 && patches[patches.length - 1].files['disney2027-dados.json'].content.includes('"cambio": 6');
+  check('sync: edição enviada para a nuvem (push automático)', pushed, patches.length + ' push(es)');
+  const remote = JSON.parse(gist.files['disney2027-dados.json'].content);
+  remote.cambio = 7; remote.cambioManual = true;
+  gist.files['disney2027-dados.json'].content = JSON.stringify(remote, null, 2);
+  gist.updated_at = '2026-07-18T11:00:00Z';
+  await p4.reload({ waitUntil: 'load' });
+  await p4.waitForTimeout(1200);
+  const camRemote = await p4.inputValue('#cambio');
+  check('sync: mudança remota aplicada ao abrir', camRemote === '7', camRemote);
+  await ctx3.close();
+
+  // 17. reset persiste após reload (gravação síncrona antes do reload)
+  const ctx4 = await browser.newContext();
+  const p5 = await ctx4.newPage();
+  p5.on('dialog', d => d.accept());
+  await p5.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p5.waitForTimeout(700);
+  await p5.click('#tabbtn-custos');
+  await p5.fill('#cambio', '9');
+  await p5.waitForTimeout(500);
+  await p5.click('#tabbtn-check');
+  await p5.click('#btnReset');
+  await p5.waitForTimeout(1500);
+  const camReset = await p5.inputValue('#cambio');
+  check('reset volta ao padrão e persiste (saveNow)', camReset === '5.5', camReset);
+  await ctx4.close();
+
+  // 18. mobile: viewport funciona, nav fixa, sem scroll horizontal
   const mob = await ctx.newPage();
   await mob.setViewportSize({ width: 390, height: 844 });
   await mob.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
