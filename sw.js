@@ -1,8 +1,9 @@
 /* Service worker do Planejador Disney 2027.
    Estratégia stale-while-revalidate: responde do cache na hora (funciona
    offline no parque) e atualiza o cache em segundo plano a cada visita.
-   Aumente a versão ao publicar mudanças para descartar caches antigos. */
-var CACHE = 'disney2027-v1';
+   A versão do cache é carimbada automaticamente com o SHA do commit pelo
+   workflow bump-sw-cache.yml a cada merge em main. */
+var CACHE = 'disney2027-v2';
 var ASSETS = [
   './',
   './index.html',

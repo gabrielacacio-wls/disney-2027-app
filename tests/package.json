@@ -1,0 +1,8 @@
+{
+  "name": "disney2027-tests",
+  "private": true,
+  "description": "Testes de ponta a ponta do Planejador Disney 2027",
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
