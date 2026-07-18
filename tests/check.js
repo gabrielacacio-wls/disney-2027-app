@@ -266,7 +266,37 @@ const { chromium } = require('playwright');
   check('dia de parque: durante a viagem abre na aba Hoje marcando HOJE', hojeOn && tagTxt.includes('HOJE'), `on=${hojeOn} tag=${tagTxt}`);
   await ctxTrip.close();
 
-  // 19. reset persiste após reload (gravação síncrona antes do reload)
+  // 19. registro de gastos: lançar, integrar aos custos, avisar estouro, persistir
+  const ctxG = await browser.newContext();
+  const p8 = await ctxG.newPage();
+  await p8.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p8.waitForTimeout(700);
+  await p8.click('#tabbtn-hoje');
+  await p8.fill('#gastoValor', '25.5');
+  await p8.fill('#gastoNota', 'almoço Cosmic Ray´s');
+  await p8.locator('#gastoCats button', { hasText: 'Comida' }).click();
+  await p8.waitForTimeout(500);
+  const gastoItem = await p8.textContent('#gastoList');
+  const gastoResumo = await p8.textContent('#diaGastoResumo');
+  check('gastos: lançamento entra na lista do dia', gastoItem.includes('25,5') && gastoItem.includes('almoço'), gastoResumo);
+  await p8.click('#tabbtn-custos');
+  const totReal = await p8.textContent('#totReal');
+  const glanc = await p8.textContent('[data-glanc="2"]');
+  check('gastos: alimenta o Real dos custos e a nota da linha', totReal.includes('26') && glanc.includes('25,5'), `totReal=${totReal} linha=${glanc}`);
+  await p8.click('#tabbtn-hoje');
+  await p8.fill('#gastoValor', '4000');
+  await p8.locator('#gastoCats button', { hasText: 'Comida' }).click();
+  await p8.waitForTimeout(500);
+  const aviso19 = await p8.textContent('#gastoViagem');
+  check('gastos: avisa estouro da categoria', aviso19.includes('⚠') && aviso19.includes('acima do orçado'), aviso19.slice(0, 90));
+  await p8.reload({ waitUntil: 'load' });
+  await p8.waitForTimeout(700);
+  await p8.click('#tabbtn-hoje');
+  const persistiu = await p8.textContent('#gastoList');
+  check('gastos: persistem após reload', persistiu.includes('almoço'), '');
+  await ctxG.close();
+
+  // 20. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();
   p5.on('dialog', d => d.accept());
