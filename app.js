@@ -15,11 +15,11 @@
       { n: 'Alimentação (mercado + parques)', v: 3000 },
       { n: 'Universal (3 dias) + LEGOLAND/Peppa', v: 2650 },
       { n: 'Carro (minivan) + gasolina + estacionamento', v: 1500 },
-      { n: 'Voos — taxas de embarque (7 em pontos)', v: 640 },
-      { n: 'Seguro viagem (plano B)', v: 580 },
+      { n: 'Voos — taxas de embarque (4 em pontos)', v: 370 },
+      { n: 'Seguro viagem (plano B)', v: 330 },
       { n: 'Compras pessoais (US$ 1.000 × 7)', v: 7000 }
     ],
-    flags: { compras1000: true, marilia: true },
+    flags: { compras1000: true, marilia: true, voosCartao: true },
     alturas: { jose: 86, laura: 108 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
@@ -101,13 +101,14 @@
       { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina, Dario e Marília juntos', ok: false },
       { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
       { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
-      { f: 'Ago–nov/2026', t: 'Emitir as 7 passagens com pontos (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
+      { f: 'Ago–nov/2026', t: 'Emitir as 4 passagens com pontos — Gabriel, Débora, Laura e José (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
+      { f: 'Ago–nov/2026', t: 'Regina, Dario e Marília: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Vistos dos 4 em mãos ✓', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Reservar minivan com cancelamento grátis — pagar no Skyline (ativa CDW)', ok: false },
       { f: 'Fev–mar/2027', t: 'Dia -60, 6h ET: reservas de restaurantes (Topolino’s primeiro, depois Akershus, Tusker, Chef Mickey’s)', ok: false },
-      { f: 'Fev–mar/2027', t: 'Emitir os 7 bilhetes de seguro AIG/MasterAssist e guardar os PDFs', ok: false },
-      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente', ok: false },
+      { f: 'Fev–mar/2027', t: 'Emitir os 4 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs', ok: false },
+      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós e da Marília; seguro dedicado se houver doença preexistente', ok: false },
       { f: 'Fev–mar/2027', t: 'Reconferir regras do Lightning Lane e comprar Multi Pass (MK e HS)', ok: false },
       { f: 'Fev–mar/2027', t: 'Cadastrar os 7 no My Disney Experience + app Universal; vincular ingressos', ok: false },
       { f: 'Semana da viagem', t: 'Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas', ok: false },
@@ -154,6 +155,25 @@
           }
         }
         s.flags.marilia = true;
+      }
+      // Avós e Marília compram passagem e usam o seguro do cartão deles
+      if (!s.flags.voosCartao) {
+        s.custos.forEach(function (c) {
+          if (c.n === 'Voos — taxas de embarque (7 em pontos)' && c.v === 640) { c.n = 'Voos — taxas de embarque (4 em pontos)'; c.v = 370; }
+          if (c.n === 'Seguro viagem (plano B)' && c.v === 580) { c.v = 330; }
+        });
+        s.checklist.forEach(function (i) {
+          i.t = i.t.replace('Emitir as 7 passagens com pontos (alvo ≤80 mil/trecho', 'Emitir as 4 passagens com pontos — Gabriel, Débora, Laura e José (alvo ≤80 mil/trecho')
+            .replace('Emitir os 7 bilhetes de seguro AIG/MasterAssist e guardar os PDFs', 'Emitir os 4 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs')
+            .replace('Conferir apólice do cartão dos avós; seguro dedicado', 'Conferir apólice do cartão dos avós e da Marília; seguro dedicado');
+        });
+        for (var vi = 0; vi < s.checklist.length; vi++) {
+          if (/passagens com pontos/.test(s.checklist[vi].t)) {
+            s.checklist.splice(vi + 1, 0, { f: s.checklist[vi].f, t: 'Regina, Dario e Marília: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false });
+            break;
+          }
+        }
+        s.flags.voosCartao = true;
       }
       if (!s.alturas) s.alturas = { jose: 86, laura: 108 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
@@ -332,7 +352,7 @@
       { l: 'Aniversário VPD — última grande promo de ingressos', d: new Date(2027, 2, 11) },
       { l: 'Reservas de restaurantes — dia -60, 6h ET', d: addDays(ini, -60) },
       { l: 'Remedir alturas + reconferir Lightning Lane', d: addDays(ini, -30) },
-      { l: 'Bilhetes de seguro AIG dos ' + nPessoas() + ' (até)', d: addDays(ini, -7) },
+      { l: 'Bilhetes e apólices de seguro de todos (até)', d: addDays(ini, -7) },
       { l: 'Embarque VCP → MCO ✈', d: ini }
     ].sort(function (a, b) { return a.d - b.d; });
   }
