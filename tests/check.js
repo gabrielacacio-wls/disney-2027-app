@@ -217,7 +217,56 @@ const { chromium } = require('playwright');
   check('sync: mudança remota aplicada ao abrir', camRemote === '7', camRemote);
   await ctx3.close();
 
-  // 17. reset persiste após reload (gravação síncrona antes do reload)
+  // 17. modo dia de parque: prévia + navegação entre dias
+  const ctxDia = await browser.newContext();
+  const p6 = await ctxDia.newPage();
+  await p6.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p6.waitForTimeout(700);
+  await p6.click('#tabbtn-hoje');
+  const aviso = await p6.locator('#diaAviso').isVisible();
+  const dia1 = await p6.textContent('#diaDesc');
+  check('dia de parque: prévia mostra o 1º dia', aviso && dia1.includes('Voo VCP'), dia1.slice(0, 50));
+  await p6.click('#diaNext');
+  await p6.click('#diaNext');
+  await p6.click('#diaNext'); // dia 4 = Magic Kingdom
+  const dia4 = await p6.textContent('#diaDesc');
+  const lembretes = await p6.textContent('#diaLembretes');
+  const mochilaVis = await p6.locator('#diaMochilaCard').isVisible();
+  check('dia de parque: dia Disney mostra Rider Switch e mochila', dia4.includes('Magic Kingdom') && lembretes.includes('Rider Switch') && mochilaVis, dia4.slice(0, 40));
+  // mochila do dia persiste por data
+  await p6.locator('#diaMochila input').first().check();
+  await p6.waitForTimeout(500);
+  await p6.reload({ waitUntil: 'load' });
+  await p6.waitForTimeout(700);
+  await p6.click('#tabbtn-hoje');
+  for (let k = 0; k < 3; k++) await p6.click('#diaNext');
+  const mochilaMarcada = await p6.locator('#diaMochila input').first().isChecked();
+  check('dia de parque: mochila do dia persiste por data', mochilaMarcada);
+  await ctxDia.close();
+
+  // 18. durante a viagem, o app abre direto na aba Hoje
+  const ctxTrip = await browser.newContext();
+  const p7 = await ctxTrip.newPage();
+  await p7.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p7.waitForTimeout(700);
+  const hoje = new Date();
+  const isoLocal = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const ini = new Date(hoje); ini.setDate(ini.getDate() - 2);
+  const fim = new Date(hoje); fim.setDate(fim.getDate() + 4);
+  await p7.evaluate(([a, b]) => {
+    const s = JSON.parse(localStorage.getItem('disney2027-planner-v1'));
+    s.inicio = a; s.fim = b;
+    localStorage.setItem('disney2027-planner-v1', JSON.stringify(s));
+  }, [isoLocal(ini), isoLocal(fim)]);
+  await p7.reload({ waitUntil: 'load' });
+  await p7.waitForTimeout(800);
+  const hojeOn = await p7.evaluate(() => document.getElementById('tab-hoje').classList.contains('on'));
+  const tagVis = await p7.locator('#diaTag').isVisible();
+  const tagTxt = tagVis ? await p7.textContent('#diaTag') : '';
+  check('dia de parque: durante a viagem abre na aba Hoje marcando HOJE', hojeOn && tagTxt.includes('HOJE'), `on=${hojeOn} tag=${tagTxt}`);
+  await ctxTrip.close();
+
+  // 19. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();
   p5.on('dialog', d => d.accept());

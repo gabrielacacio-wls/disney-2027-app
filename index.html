@@ -28,6 +28,7 @@
   </header>
 
   <nav class="tabs" role="tablist" aria-label="Seções do planejador">
+    <button data-tab="hoje" id="tabbtn-hoje" role="tab" aria-selected="false" aria-controls="tab-hoje" tabindex="-1">Hoje</button>
     <button data-tab="dash" id="tabbtn-dash" role="tab" aria-selected="true" aria-controls="tab-dash" class="on">Resumo</button>
     <button data-tab="custos" id="tabbtn-custos" role="tab" aria-selected="false" aria-controls="tab-custos" tabindex="-1">Custos</button>
     <button data-tab="cal" id="tabbtn-cal" role="tab" aria-selected="false" aria-controls="tab-cal" tabindex="-1">Agenda</button>
@@ -35,6 +36,50 @@
     <button data-tab="guia" id="tabbtn-guia" role="tab" aria-selected="false" aria-controls="tab-guia" tabindex="-1">Guia</button>
     <button data-tab="check" id="tabbtn-check" role="tab" aria-selected="false" aria-controls="tab-check" tabindex="-1">Checklist</button>
   </nav>
+
+  <section class="tab" id="tab-hoje" role="tabpanel" aria-labelledby="tabbtn-hoje">
+    <div class="banner" id="diaAviso" hidden>🔭 Prévia do modo dia de parque — durante a viagem, o app abre direto nesta aba mostrando o dia atual.</div>
+    <div class="card" style="margin-bottom:14px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+        <button class="btn" id="diaPrev" aria-label="Dia anterior">‹</button>
+        <div style="text-align:center; flex:1; min-width:0;">
+          <div class="eyebrow" id="diaData"></div>
+          <div class="dia-desc" id="diaDesc"></div>
+          <div style="margin-top:8px; display:flex; gap:6px; justify-content:center; flex-wrap:wrap;">
+            <span class="chip" id="diaTipo"></span>
+            <span class="chip gold" id="diaTag" hidden></span>
+          </div>
+        </div>
+        <button class="btn" id="diaNext" aria-label="Próximo dia">›</button>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <h3>⚡ Lembretes do dia</h3>
+        <ul class="dia-list" id="diaLembretes"></ul>
+      </div>
+      <div class="card" id="diaMochilaCard">
+        <h3>🎒 Mochila do parque <span class="muted" style="font-weight:400;" id="diaMochilaResumo"></span></h3>
+        <ul class="check" id="diaMochila"></ul>
+      </div>
+    </div>
+    <div class="grid g2 mt">
+      <div class="card">
+        <h3>📏 Alturas de hoje</h3>
+        <p class="dia-alturas" id="diaAlturas"></p>
+        <button class="btn" id="diaVerGuia">Ver guia completo dos parques</button>
+      </div>
+      <div class="card">
+        <h3>🌅 Amanhã</h3>
+        <p class="sub" id="diaAmanha" style="font-size:15px; line-height:1.6;"></p>
+      </div>
+    </div>
+    <div class="card mt dia-emerg">
+      <h3>🚨 Emergência médica</h3>
+      <p class="sub">Ligue para o seguro <b>ANTES</b> de qualquer atendimento (AIG / MasterAssist Black do cartão Skyline):</p>
+      <a class="btn dia-tel" href="tel:+18006278372">📞 1-800-627-8372</a>
+    </div>
+  </section>
 
   <section class="tab on" id="tab-dash" role="tabpanel" aria-labelledby="tabbtn-dash">
     <div class="hero">

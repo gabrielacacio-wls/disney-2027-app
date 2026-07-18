@@ -21,6 +21,7 @@
     flags: { compras1000: true },
     alturas: { jose: 86, laura: 108 },
     cofre: { meta: 0, aportes: [] },
+    diaCheck: {},
     malas: [
       { p: 'Todos', t: 'Passaportes + vistos', ok: false },
       { p: 'Todos', t: 'Certidões de nascimento das crianças (cópias)', ok: false },
@@ -126,6 +127,7 @@
       if (!s.alturas) s.alturas = { jose: 86, laura: 108 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
       if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
+      if (!s.diaCheck) s.diaCheck = {};
       return s;
     } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
   }
@@ -225,7 +227,7 @@
   // ---------- header + countdown ----------
   function renderHeader() {
     var a = pd(S.inicio), b = pd(S.fim);
-    document.getElementById('chipDatas').textContent = '📅 ' + a.getDate() + ' ' + MESES[a.getMonth()].slice(0, 3) + ' → ' + b.getDate() + ' ' + MESES[b.getMonth()].slice(0, 3) + ' 2027';
+    document.getElementById('chipDatas').textContent = '📅 ' + a.getDate() + ' ' + MESES[a.getMonth()].slice(0, 3) + ' → ' + b.getDate() + ' ' + MESES[b.getMonth()].slice(0, 3) + ' ' + b.getFullYear();
   }
   function tickCountdown() {
     if (sync && sync.gistId && new Date().getSeconds() === 0) renderSyncUi();
@@ -1188,6 +1190,7 @@
       if (on && focusBtn) x.focus();
     });
     document.querySelectorAll('section.tab').forEach(function (x) { x.classList.toggle('on', x.id === 'tab-' + name); });
+    if (name === 'hoje') renderDia();
     try { localStorage.setItem(TAB_KEY, name); } catch (e) {}
   }
   tabBtns.forEach(function (b) {
@@ -1201,11 +1204,122 @@
     var next = e.key === 'Home' ? 0 : e.key === 'End' ? tabBtns.length - 1 : (cur + keys[e.key] + tabBtns.length) % tabBtns.length;
     setTab(tabBtns[next].dataset.tab, true);
   });
-  (function restoreTab() {
+  function restoreTab() {
+    // durante a viagem, o app abre direto no dia atual
+    if (hojeNaViagem()) { setTab('hoje'); return; }
     var t = null;
     try { t = localStorage.getItem(TAB_KEY); } catch (e) {}
     if (t && document.getElementById('tab-' + t)) setTab(t);
-  })();
+  }
+
+  // ---------- modo dia de parque (aba Hoje) ----------
+  var DIA_MOCHILA = [
+    'Garrafas de água (encher no parque)',
+    'Capas de chuva',
+    'Protetor solar e repelente',
+    'Powerbank e cabos',
+    'Certidão do José (cópia na mochila)',
+    'Carrinho + cinto CARES',
+    'Troca de roupa das crianças',
+    'Ingressos prontos no app / impressos'
+  ];
+  var diaSel = null;
+  function hojeNaViagem() {
+    var h = iso(new Date());
+    return h >= S.inicio && h <= S.fim;
+  }
+  function diaLembretes(ent) {
+    var d = (ent.d || '').toLowerCase();
+    var out = [];
+    if (ent.t === 'parque') {
+      var disney = /magic|epcot|hollywood|animal kingdom/.test(d);
+      var uni = /universal|epic|islands|adventure/.test(d);
+      out.push('🕐 Chegar ANTES da abertura — a primeira hora vale por três');
+      if (disney) {
+        out.push('🔁 Rider Switch: a família TODA faz check-in com o Cast Member antes da fila; grupo 2 (máx. 2 pessoas) entra pela Lightning Lane depois');
+        out.push('📱 Mobile order no app da Disney evita a fila do almoço');
+      }
+      if (uni) out.push('🔁 Child Swap: todos entram juntos na fila; sala de espera climatizada na área de embarque');
+      if (/animal kingdom/.test(d)) out.push('🦁 Kilimanjaro Safaris logo cedo; o parque fecha mais cedo — sair ~15h');
+      if (/epic/.test(d)) out.push('🎮 Power-Up Bands na Super Nintendo World; ir de terça a quinta');
+      if (/hollywood/.test(d)) out.push('🤠 Direto para a Toy Story Land na abertura');
+      out.push('💧 Água grátis em qualquer quick service — peça "cup of water"');
+      out.push('😴 Pausa 13h–16h no hotel: a soneca do José segura a noite da família inteira');
+    } else if (ent.t === 'viagem') {
+      out.push('🛂 Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas');
+      out.push('🧳 Despacho do carrinho e da cadeirinha no check-in');
+      out.push('💊 Remédios dos avós na bagagem de MÃO');
+    } else if (ent.t === 'compras') {
+      out.push('💳 Tudo no cartão Skyline — mantém o seguro e acumula pontos');
+      out.push('📦 Conferir o espaço/peso das malas antes de comprar');
+      out.push('🧾 Guardar notas fiscais para a declaração na volta');
+    } else {
+      out.push('🏊 Dia de recarregar as energias — piscina, soneca e pé para cima');
+      out.push('🧴 Protetor solar vale até na piscina do hotel');
+    }
+    return out;
+  }
+  function renderDia() {
+    var days = tripDays();
+    if (!days.length) return;
+    var hojeIso = iso(new Date());
+    if (!diaSel || days.indexOf(diaSel) < 0) {
+      diaSel = days.indexOf(hojeIso) >= 0 ? hojeIso : days[0];
+    }
+    var i = days.indexOf(diaSel);
+    document.getElementById('diaPrev').disabled = i <= 0;
+    document.getElementById('diaNext').disabled = i >= days.length - 1;
+    var ent = S.roteiro[diaSel] || { t: 'outro', d: '' };
+    var dt = pd(diaSel);
+    document.getElementById('diaData').textContent =
+      DIAS_SEM[dt.getDay()] + ', ' + dt.getDate() + ' de ' + MESES[dt.getMonth()] + ' de ' + dt.getFullYear() + ' · dia ' + (i + 1) + ' de ' + days.length;
+    document.getElementById('diaDesc').textContent = ent.d || 'Nada planejado ainda — edite na aba Agenda';
+    document.getElementById('diaTipo').textContent = TIPOS[ent.t] || 'Outro';
+    var tag = document.getElementById('diaTag');
+    var amanhaIso = iso(addDays(new Date(), 1));
+    tag.hidden = !(diaSel === hojeIso || diaSel === amanhaIso);
+    tag.textContent = diaSel === hojeIso ? '📍 HOJE' : '⏭ AMANHÃ';
+    document.getElementById('diaAviso').hidden = hojeNaViagem();
+
+    var ul = document.getElementById('diaLembretes'); ul.innerHTML = '';
+    diaLembretes(ent).forEach(function (t) {
+      var li = document.createElement('li'); li.textContent = t; ul.appendChild(li);
+    });
+
+    var mochilaCard = document.getElementById('diaMochilaCard');
+    mochilaCard.hidden = ent.t !== 'parque';
+    if (ent.t === 'parque') {
+      if (!S.diaCheck[diaSel]) S.diaCheck[diaSel] = DIA_MOCHILA.map(function () { return false; });
+      var marks = S.diaCheck[diaSel];
+      var ml = document.getElementById('diaMochila'); ml.innerHTML = '';
+      DIA_MOCHILA.forEach(function (t, idx) {
+        var li = document.createElement('li'); if (marks[idx]) li.classList.add('done');
+        var id = 'dm-' + idx;
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!marks[idx]; cb.id = id;
+        cb.addEventListener('change', function () { marks[idx] = cb.checked; save(); renderDia(); });
+        var lb = document.createElement('label'); lb.textContent = t; lb.setAttribute('for', id);
+        li.appendChild(cb); li.appendChild(lb); ml.appendChild(li);
+      });
+      var done = marks.filter(Boolean).length;
+      document.getElementById('diaMochilaResumo').textContent = '— ' + done + ' de ' + DIA_MOCHILA.length;
+    }
+
+    document.getElementById('diaAlturas').textContent = 'José ' + S.alturas.jose + ' cm · Laura ' + S.alturas.laura + ' cm';
+    var prox = days[i + 1];
+    var proxEnt = prox ? (S.roteiro[prox] || { t: 'outro', d: '' }) : null;
+    document.getElementById('diaAmanha').textContent = prox
+      ? (TIPOS[proxEnt.t] || 'Outro') + ' — ' + (proxEnt.d || 'nada planejado ainda')
+      : 'Último dia da viagem — boa volta para casa! ✈';
+  }
+  document.getElementById('diaPrev').addEventListener('click', function () {
+    var days = tripDays(); var i = days.indexOf(diaSel);
+    if (i > 0) { diaSel = days[i - 1]; renderDia(); }
+  });
+  document.getElementById('diaNext').addEventListener('click', function () {
+    var days = tripDays(); var i = days.indexOf(diaSel);
+    if (i < days.length - 1) { diaSel = days[i + 1]; renderDia(); }
+  });
+  document.getElementById('diaVerGuia').addEventListener('click', function () { setTab('guia'); });
 
   // ---------- alerta de prazos próximos (uma vez por dia) ----------
   var KD_ALERT_KEY = 'disney2027-kd-alert';
@@ -1226,8 +1340,9 @@
     try { localStorage.setItem(KD_ALERT_KEY, hojeIso); } catch (e) {}
   }
 
-  function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderCofre(); tickCountdown(); }
+  function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderCofre(); renderDia(); tickCountdown(); }
   renderAll();
+  restoreTab();
   maybeBackupBanner();
   alertKeyDates();
   fetchCambio(false);

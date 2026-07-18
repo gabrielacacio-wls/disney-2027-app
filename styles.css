@@ -187,6 +187,13 @@ ul.check li.done label { color: var(--muted); text-decoration: line-through; tex
 .pago-line b { font-variant-numeric: tabular-nums; }
 table.custos input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--good); cursor: pointer; }
 table.custos tr.paid td, table.custos tr.paid input { color: var(--muted); }
+.dia-desc { font-size: 20px; font-weight: 700; margin-top: 4px; line-height: 1.35; }
+.dia-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 8px; }
+.dia-list li { font-size: 15px; line-height: 1.45; padding: 9px 12px; background: var(--bg); border-radius: 10px; }
+.dia-alturas { font-size: 18px; font-weight: 650; margin: 4px 0 12px; }
+.dia-emerg { border-color: var(--danger); }
+.dia-tel { font-size: 18px; padding: 12px 18px; display: inline-block; margin-top: 6px; text-decoration: none; }
+#tab-hoje ul.check label { font-size: 15px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 100; display: flex; align-items: center; gap: 12px; background: var(--ink); color: var(--card); padding: 10px 16px; border-radius: 12px; font-size: 13.5px; box-shadow: 0 6px 24px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }
 .toast button { border: none; background: none; color: var(--accent); font: inherit; font-weight: 700; cursor: pointer; padding: 2px 4px; white-space: nowrap; }
 :root[data-theme="dark"] .toast button { color: #8aa6ff; }
