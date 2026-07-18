@@ -22,6 +22,7 @@
     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
       <span class="chip" id="chipDatas"></span>
       <span class="chip gold" id="chipCount"></span>
+      <button class="chip" id="chipSync" title="Sincronizar agora" hidden></button>
       <button class="btn theme-btn" id="btnTheme" title="Alternar tema (auto / claro / escuro)" aria-label="Alternar tema">🌓</button>
     </div>
   </header>
@@ -283,6 +284,19 @@
   </section>
 
   <section class="tab" id="tab-check" role="tabpanel" aria-labelledby="tabbtn-check">
+    <div class="card" style="margin-bottom:14px;">
+      <h2>☁️ Sincronização entre aparelhos</h2>
+      <p class="muted" id="syncStatus" style="margin:2px 0 10px;"></p>
+      <div id="syncOff" class="toolbar" style="border-top:none; padding-top:0; margin-top:0;">
+        <input type="password" id="syncToken" placeholder="Token do GitHub (escopo: gist)" autocomplete="off" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 10px; font:inherit; font-size:13px; flex:1; min-width:200px;">
+        <button class="btn" id="btnSyncConnect">Conectar</button>
+      </div>
+      <p class="muted" id="syncHelp" style="margin:8px 0 0;">Crie um <a href="https://github.com/settings/tokens/new?scopes=gist&amp;description=Planejador%20Disney%202027" target="_blank" rel="noopener">token do GitHub só com o escopo <b>gist</b></a>, cole acima e use o <b>mesmo token</b> nos aparelhos da família. O plano fica num gist secreto da sua conta, com histórico de versões de brinde. O token não sai deste navegador — não entra no JSON exportado nem no link compartilhado.</p>
+      <div id="syncOn" class="toolbar" style="border-top:none; padding-top:0; margin-top:0;" hidden>
+        <button class="btn" id="btnSyncNow">Sincronizar agora</button>
+        <button class="btn ghost" id="btnSyncOff">Desconectar este aparelho</button>
+      </div>
+    </div>
     <div class="card" style="margin-bottom:14px;">
       <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:4px;">
         <h2>Lista de malas</h2>

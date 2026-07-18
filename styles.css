@@ -41,6 +41,7 @@
   --chart-9: #c98500; --chart-10: #888780;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 body { background: var(--bg); color: var(--ink); font-family: "Segoe UI", system-ui, -apple-system, sans-serif; margin: 0; line-height: 1.5; }
 .wrap { max-width: 1060px; margin: 0 auto; padding: 24px 20px 64px; }
 .eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .09em; color: var(--muted); font-weight: 600; }
@@ -51,6 +52,8 @@ h3 { font-size: 14px; margin: 0 0 8px; font-weight: 650; }
 header.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
 .chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent-ink); border-radius: 999px; padding: 4px 12px; font-size: 12.5px; font-weight: 600; }
 .chip.gold { background: var(--gold-soft); color: var(--gold); }
+button.chip { border: none; cursor: pointer; font-family: inherit; }
+.muted a { color: var(--accent-ink); }
 nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 20px; }
 nav.tabs button { border: 1px solid var(--line); background: var(--card); color: var(--muted); border-radius: 999px; padding: 8px 16px; font-size: 13.5px; font-weight: 600; cursor: pointer; font-family: inherit; }
 nav.tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
