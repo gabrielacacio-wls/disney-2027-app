@@ -296,7 +296,33 @@ const { chromium } = require('playwright');
   check('gastos: persistem após reload', persistiu.includes('almoço'), '');
   await ctxG.close();
 
-  // 20. reset persiste após reload (gravação síncrona antes do reload)
+  // 20. família editável: Marília incluída, valores por 7, adicionar/remover pessoa
+  const ctxF = await browser.newContext();
+  const p9 = await ctxF.newPage();
+  await p9.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await p9.waitForTimeout(700);
+  const nomes = await p9.$$eval('#pesGrid input.nm', els => els.map(e => e.value));
+  const famHdr = await p9.textContent('#famNames');
+  check('família: Marília no grupo e no cabeçalho', nomes.includes('Marília') && famHdr.includes('Marília'), nomes.join(','));
+  const lbl7 = await p9.textContent('#stPPLbl');
+  const pp7 = await p9.textContent('#stPP');
+  check('família: média recalculada para 7 pessoas', lbl7.includes('(7)') && pp7.includes('3.353'), `${lbl7} ${pp7}`);
+  const checklistTxt = await p9.textContent('#phases');
+  check('família: checklist cobre passaporte e visto da Marília', checklistTxt.includes('Passaporte da Marília') && checklistTxt.includes('Regina, Dario, Marília e José'));
+  await p9.click('#addPessoa');
+  await p9.waitForTimeout(300);
+  const lbl8 = await p9.textContent('#stPPLbl');
+  const pp8 = await p9.textContent('#stPP');
+  const cards8 = await p9.locator('#shopBudgets .sb-card').count();
+  check('família: adicionar pessoa recalcula (÷8)', lbl8.includes('(8)') && pp8.includes('2.934') && cards8 === 8, `${lbl8} ${pp8} cards=${cards8}`);
+  await p9.locator('#pesGrid .pes .del').last().click();
+  await p9.waitForTimeout(300);
+  const lblBack = await p9.textContent('#stPPLbl');
+  const undoVis = await p9.locator('.toast').isVisible();
+  check('família: remover pessoa recalcula e oferece desfazer', lblBack.includes('(7)') && undoVis, lblBack);
+  await ctxF.close();
+
+  // 21. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();
   p5.on('dialog', d => d.accept());

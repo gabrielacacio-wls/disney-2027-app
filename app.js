@@ -3,8 +3,9 @@
   var THEME_KEY = 'disney2027-theme';
   var TAB_KEY = 'disney2027-tab';
   var SNOOZE_KEY = 'disney2027-backup-snooze';
-  var PESSOAS = 6;
   var TIPOS = { parque: 'Parque', descanso: 'Descanso', compras: 'Compras', viagem: 'Voo', outro: 'Outro' };
+  function nPessoas() { return (S && S.pessoas && S.pessoas.length) || 6; }
+  function nomesPessoas() { return S.pessoas.map(function (p) { return p.n; }); }
 
   var DEF = {
     inicio: '2027-04-23', fim: '2027-05-11', cambio: 5.5,
@@ -14,11 +15,11 @@
       { n: 'Alimentação (mercado + parques)', v: 3000 },
       { n: 'Universal (3 dias) + LEGOLAND/Peppa', v: 2650 },
       { n: 'Carro (minivan) + gasolina + estacionamento', v: 1500 },
-      { n: 'Voos — taxas de embarque (6 em pontos)', v: 550 },
-      { n: 'Seguro viagem (plano B)', v: 500 },
-      { n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }
+      { n: 'Voos — taxas de embarque (7 em pontos)', v: 640 },
+      { n: 'Seguro viagem (plano B)', v: 580 },
+      { n: 'Compras pessoais (US$ 1.000 × 7)', v: 7000 }
     ],
-    flags: { compras1000: true },
+    flags: { compras1000: true, marilia: true },
     alturas: { jose: 86, laura: 108 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
@@ -86,27 +87,29 @@
       { n: 'Laura', r: 'visto válido', s: 'ok' },
       { n: 'Regina', r: 'renovação de visto', s: 'pend' },
       { n: 'Dario', r: 'renovação de visto', s: 'pend' },
-      { n: 'José', r: 'passaporte + 1º visto', s: 'pend' }
+      { n: 'José', r: 'passaporte + 1º visto', s: 'pend' },
+      { n: 'Marília', r: 'irmã da Débora · 30 anos · 1,70 m — passaporte + visto', s: 'pend' }
     ],
     checklist: [
       { f: 'Agora (jul–ago/2026)', t: 'Conferir validade dos 5 passaportes existentes (além de mai/2027)', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Passaporte do José: pagar GRU (R$ 257,25) e agendar na PF — os dois pais + certidão', ok: false },
+      { f: 'Agora (jul–ago/2026)', t: 'Passaporte da Marília: conferir validade (além de mai/2027) ou emitir na PF', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Confirmar o saldo de 650 mil pontos no app Azul Fidelidade', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Assinar o menor plano do Clube Azul (descontos + bônus + pontos não expiram)', ok: true },
       { f: 'Agora (jul–ago/2026)', t: 'Ativar alertas de emissão em pontos VCP–MCO (Melhores Destinos, PP, PPV)', ok: false },
-      { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario e José', ok: false },
-      { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina e Dario juntos', ok: false },
+      { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario, Marília e José', ok: false },
+      { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina, Dario e Marília juntos', ok: false },
       { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
       { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
-      { f: 'Ago–nov/2026', t: 'Emitir as 6 passagens com pontos (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
-      { f: 'Nov/2026–jan/2027', t: 'Vistos dos 3 em mãos ✓', ok: false },
+      { f: 'Ago–nov/2026', t: 'Emitir as 7 passagens com pontos (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Vistos dos 4 em mãos ✓', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Reservar minivan com cancelamento grátis — pagar no Skyline (ativa CDW)', ok: false },
       { f: 'Fev–mar/2027', t: 'Dia -60, 6h ET: reservas de restaurantes (Topolino’s primeiro, depois Akershus, Tusker, Chef Mickey’s)', ok: false },
-      { f: 'Fev–mar/2027', t: 'Emitir os 6 bilhetes de seguro AIG/MasterAssist e guardar os PDFs', ok: false },
+      { f: 'Fev–mar/2027', t: 'Emitir os 7 bilhetes de seguro AIG/MasterAssist e guardar os PDFs', ok: false },
       { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente', ok: false },
       { f: 'Fev–mar/2027', t: 'Reconferir regras do Lightning Lane e comprar Multi Pass (MK e HS)', ok: false },
-      { f: 'Fev–mar/2027', t: 'Cadastrar os 6 no My Disney Experience + app Universal; vincular ingressos', ok: false },
+      { f: 'Fev–mar/2027', t: 'Cadastrar os 7 no My Disney Experience + app Universal; vincular ingressos', ok: false },
       { f: 'Semana da viagem', t: 'Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas', ok: false },
       { f: 'Semana da viagem', t: 'Receitas médicas dos avós; remédios na bagagem de mão', ok: false },
       { f: 'Semana da viagem', t: 'Check-in online; despacho de carrinho e cadeirinha', ok: false },
@@ -125,6 +128,33 @@
       if (s.shopBudget == null) s.shopBudget = 1000;
       if (!s.flags) s.flags = {};
       if (!s.flags.compras1000) { s.custos.push({ n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }); s.flags.compras1000 = true; }
+      // Marília entra no grupo (7 pessoas): pessoas, custos por cabeça e checklist
+      if (!s.flags.marilia) {
+        s.pessoas.push({ n: 'Marília', r: 'irmã da Débora · 30 anos · 1,70 m — passaporte + visto', s: 'pend' });
+        s.custos.forEach(function (c) {
+          if (c.n === 'Compras pessoais (US$ 1.000 × 6)' && c.v === 6000) { c.n = 'Compras pessoais (US$ 1.000 × 7)'; c.v = 7000; }
+          if (c.n === 'Voos — taxas de embarque (6 em pontos)' && c.v === 550) { c.n = 'Voos — taxas de embarque (7 em pontos)'; c.v = 640; }
+          if (c.n === 'Seguro viagem (plano B)' && c.v === 500) { c.v = 580; }
+        });
+        var trocas = {
+          'DS-160 + taxa MRV (US$ 185) para Regina, Dario e José': 'DS-160 + taxa MRV (US$ 185) para Regina, Dario, Marília e José',
+          'Entrevistas de visto — José com um dos pais; Regina e Dario juntos': 'Entrevistas de visto — José com um dos pais; Regina, Dario e Marília juntos',
+          'Vistos dos 3 em mãos ✓': 'Vistos dos 4 em mãos ✓'
+        };
+        s.checklist.forEach(function (i) {
+          if (trocas[i.t]) i.t = trocas[i.t];
+          i.t = i.t.replace('Emitir as 6 passagens com pontos', 'Emitir as 7 passagens com pontos')
+            .replace('Emitir os 6 bilhetes de seguro AIG/MasterAssist', 'Emitir os 7 bilhetes de seguro AIG/MasterAssist')
+            .replace('Cadastrar os 6 no My Disney Experience', 'Cadastrar os 7 no My Disney Experience');
+        });
+        for (var mi = 0; mi < s.checklist.length; mi++) {
+          if (/Passaporte do José/.test(s.checklist[mi].t)) {
+            s.checklist.splice(mi + 1, 0, { f: s.checklist[mi].f, t: 'Passaporte da Marília: conferir validade (além de mai/2027) ou emitir na PF', ok: false });
+            break;
+          }
+        }
+        s.flags.marilia = true;
+      }
       if (!s.alturas) s.alturas = { jose: 86, laura: 108 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
       if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
@@ -230,6 +260,10 @@
   function renderHeader() {
     var a = pd(S.inicio), b = pd(S.fim);
     document.getElementById('chipDatas').textContent = '📅 ' + a.getDate() + ' ' + MESES[a.getMonth()].slice(0, 3) + ' → ' + b.getDate() + ' ' + MESES[b.getMonth()].slice(0, 3) + ' ' + b.getFullYear();
+    var ns = nomesPessoas();
+    document.getElementById('famNames').textContent = ns.length > 1
+      ? ns.slice(0, -1).join(', ') + ' e ' + ns[ns.length - 1]
+      : (ns[0] || '');
   }
   function tickCountdown() {
     if (sync && sync.gistId && new Date().getSeconds() === 0) renderSyncUi();
@@ -258,8 +292,9 @@
     var tot = S.custos.reduce(function (a, c) { return a + (+c.v || 0); }, 0);
     document.getElementById('stUSD').textContent = fmtUS(tot);
     document.getElementById('stBRL').textContent = '≈ ' + fmtBR(tot * S.cambio) + ' + 650 mil pontos';
-    document.getElementById('stPP').textContent = fmtUS(tot / PESSOAS);
-    document.getElementById('stPPBRL').textContent = '≈ ' + fmtBR(tot / PESSOAS * S.cambio);
+    document.getElementById('stPPLbl').textContent = 'Média por pessoa (' + nPessoas() + ')';
+    document.getElementById('stPP').textContent = fmtUS(tot / nPessoas());
+    document.getElementById('stPPBRL').textContent = '≈ ' + fmtBR(tot / nPessoas() * S.cambio);
     var days = tripDays();
     document.getElementById('stDias').textContent = days.length + ' dias';
     var parques = days.filter(function (d) { return S.roteiro[d] && S.roteiro[d].t === 'parque'; }).length;
@@ -297,7 +332,7 @@
       { l: 'Aniversário VPD — última grande promo de ingressos', d: new Date(2027, 2, 11) },
       { l: 'Reservas de restaurantes — dia -60, 6h ET', d: addDays(ini, -60) },
       { l: 'Remedir alturas + reconferir Lightning Lane', d: addDays(ini, -30) },
-      { l: 'Bilhetes de seguro AIG dos 6 (até)', d: addDays(ini, -7) },
+      { l: 'Bilhetes de seguro AIG dos ' + nPessoas() + ' (até)', d: addDays(ini, -7) },
       { l: 'Embarque VCP → MCO ✈', d: ini }
     ].sort(function (a, b) { return a.d - b.d; });
   }
@@ -316,19 +351,56 @@
       li.appendChild(dt); li.appendChild(tx); li.appendChild(lf); ul.appendChild(li);
     });
   }
+  // renomear/remover uma pessoa precisa propagar para compras e malas
   function renderPessoas() {
     var g = document.getElementById('pesGrid'); g.innerHTML = '';
     S.pessoas.forEach(function (p) {
       var box = document.createElement('div'); box.className = 'pes';
-      var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = p.n;
-      var rl = document.createElement('span'); rl.className = 'role'; rl.textContent = p.r;
+      var old = p.n;
+      var nm = document.createElement('input'); nm.className = 'nm'; nm.type = 'text'; nm.value = p.n;
+      nm.setAttribute('aria-label', 'Nome da pessoa');
+      nm.addEventListener('input', function () { p.n = nm.value; save(); });
+      nm.addEventListener('change', function () {
+        var novo = nm.value.trim() || old;
+        p.n = novo;
+        S.compras.forEach(function (it) { if (it.p === old) it.p = novo; });
+        S.malas.forEach(function (m) { if (m.p === old) m.p = novo; });
+        old = novo;
+        save(); renderAll();
+      });
+      var rl = document.createElement('input'); rl.className = 'role'; rl.type = 'text'; rl.value = p.r; rl.placeholder = 'observações…';
+      rl.setAttribute('aria-label', 'Observações de ' + p.n);
+      rl.addEventListener('input', function () { p.r = rl.value; save(); });
       var bt = document.createElement('button'); bt.className = 'st ' + (p.s === 'ok' ? 'ok' : 'pend');
       bt.textContent = p.s === 'ok' ? '✓ documentos ok' : '⏳ pendente';
       bt.setAttribute('aria-label', 'Alternar status de documentos de ' + p.n);
       bt.addEventListener('click', function () { p.s = (p.s === 'ok' ? 'pend' : 'ok'); save(); renderPessoas(); });
-      box.appendChild(nm); box.appendChild(rl); box.appendChild(bt); g.appendChild(box);
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+      del.title = 'Remover da viagem'; del.setAttribute('aria-label', 'Remover ' + p.n + ' da viagem');
+      del.addEventListener('click', function () {
+        if (S.pessoas.length <= 1) { showToast('A viagem precisa de pelo menos uma pessoa!'); return; }
+        var idx = S.pessoas.indexOf(p);
+        var cs = S.compras.filter(function (it) { return it.p === p.n; });
+        var ms = S.malas.filter(function (m) { return m.p === p.n; });
+        cs.forEach(function (it) { it.p = 'Família'; });
+        ms.forEach(function (m) { m.p = 'Todos'; });
+        S.pessoas.splice(idx, 1);
+        save(); renderAll();
+        showUndo(p.n + ' saiu da viagem — valores recalculados', function () {
+          S.pessoas.splice(Math.min(idx, S.pessoas.length), 0, p);
+          cs.forEach(function (it) { it.p = p.n; });
+          ms.forEach(function (m) { m.p = p.n; });
+          save(); renderAll();
+        });
+      });
+      box.appendChild(nm); box.appendChild(rl); box.appendChild(bt); box.appendChild(del); g.appendChild(box);
     });
   }
+  document.getElementById('addPessoa').addEventListener('click', function () {
+    S.pessoas.push({ n: 'Nova pessoa', r: 'documentos?', s: 'pend' });
+    save(); renderAll();
+    showToast('Pessoa adicionada — toque no nome para editar. Valores por pessoa recalculados.');
+  });
 
   // ---------- exportar datas-chave (.ics) ----------
   function icsDate(d) { return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); }
@@ -435,10 +507,11 @@
       rd.style.color = dif > 0 ? 'var(--danger)' : 'var(--good)';
     } else { rd.textContent = ''; }
     renderCofre();
-    document.getElementById('ppUSD').textContent = fmtUS(tot / PESSOAS);
-    document.getElementById('ppBRL').textContent = '≈ ' + fmtBR(tot / PESSOAS * S.cambio);
-    document.getElementById('ppAd').textContent = fmtUS(tot / PESSOAS * 1.1);
-    document.getElementById('ppJose').textContent = fmtUS(tot / PESSOAS * 0.55);
+    document.getElementById('ppLbl').textContent = 'Média (÷' + nPessoas() + ')';
+    document.getElementById('ppUSD').textContent = fmtUS(tot / nPessoas());
+    document.getElementById('ppBRL').textContent = '≈ ' + fmtBR(tot / nPessoas() * S.cambio);
+    document.getElementById('ppAd').textContent = fmtUS(tot / nPessoas() * 1.1);
+    document.getElementById('ppJose').textContent = fmtUS(tot / nPessoas() * 0.55);
     renderChart(); renderDash();
   }
   function renderChart() {
@@ -620,7 +693,11 @@
   }
 
   // ---------- compras ----------
-  var PLIST = ['Família', 'Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'];
+  function plist(extra) {
+    var out = ['Família'].concat(nomesPessoas());
+    if (extra && out.indexOf(extra) < 0) out.push(extra);
+    return out;
+  }
   function renderShop() {
     var list = document.getElementById('shopList'); list.innerHTML = '';
     S.compras.forEach(function (it, idx) {
@@ -631,7 +708,7 @@
       var inT = document.createElement('input'); inT.type = 'text'; inT.value = it.t; inT.placeholder = 'Item…';
       inT.addEventListener('input', function () { it.t = inT.value; save(); });
       var sel = document.createElement('select');
-      PLIST.forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; if (it.p === p) o.selected = true; sel.appendChild(o); });
+      plist(it.p).forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; if (it.p === p) o.selected = true; sel.appendChild(o); });
       sel.setAttribute('aria-label', 'Para quem');
       sel.addEventListener('change', function () { it.p = sel.value; save(); renderShopBudgets(); });
       var inV = document.createElement('input'); inV.type = 'number'; inV.min = '0'; inV.step = '10'; inV.value = it.v;
@@ -658,9 +735,9 @@
       var v = +it.v || 0;
       if (it.p === 'Família') fam += v; else per[it.p] = (per[it.p] || 0) + v;
     });
-    var rateio = fam / PESSOAS;
+    var rateio = fam / nPessoas();
     var g = document.getElementById('shopBudgets'); g.innerHTML = '';
-    ['Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'].forEach(function (nm) {
+    nomesPessoas().forEach(function (nm) {
       var tot = (per[nm] || 0) + rateio;
       var b = S.shopBudget || 0;
       var card = document.createElement('div'); card.className = 'sb-card';
@@ -677,7 +754,7 @@
     });
     var totAll = S.compras.reduce(function (a, it) { return a + (+it.v || 0); }, 0);
     var totOk = S.compras.reduce(function (a, it) { return a + (it.ok ? (+it.v || 0) : 0); }, 0);
-    document.getElementById('shopTot').textContent = 'Planejado: ' + fmtUS(totAll) + ' de ' + fmtUS((S.shopBudget || 0) * PESSOAS) + ' · já comprado: ' + fmtUS(totOk);
+    document.getElementById('shopTot').textContent = 'Planejado: ' + fmtUS(totAll) + ' de ' + fmtUS((S.shopBudget || 0) * nPessoas()) + ' · já comprado: ' + fmtUS(totOk);
   }
   document.getElementById('shopBudget').value = S.shopBudget;
   document.getElementById('shopBudget').addEventListener('input', function () { S.shopBudget = +this.value || 0; save(); renderShopBudgets(); });
@@ -847,12 +924,18 @@
   document.getElementById('altLaura').addEventListener('input', function () { S.alturas.laura = +this.value || 0; save(); renderAlturas(); });
 
   // ---------- malas ----------
-  var MLIST = ['Todos', 'Gabriel', 'Débora', 'Regina', 'Dario', 'Laura', 'José'];
+  function mlist() {
+    var out = ['Todos'].concat(nomesPessoas());
+    S.malas.forEach(function (m) { if (out.indexOf(m.p) < 0) out.push(m.p); });
+    return out;
+  }
   var selQuem = document.getElementById('malaQuem');
-  MLIST.forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; selQuem.appendChild(o); });
   function renderMalas() {
+    var atual = selQuem.value;
+    selQuem.innerHTML = '';
+    mlist().forEach(function (p) { var o = document.createElement('option'); o.value = p; o.textContent = p; if (p === atual) o.selected = true; selQuem.appendChild(o); });
     var box = document.getElementById('malasGroups'); box.innerHTML = '';
-    MLIST.forEach(function (p) {
+    mlist().forEach(function (p) {
       var itens = S.malas.filter(function (m) { return m.p === p; });
       if (!itens.length) return;
       var done = itens.filter(function (m) { return m.ok; }).length;

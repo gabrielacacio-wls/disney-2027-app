@@ -17,7 +17,7 @@
 <div class="wrap">
   <header class="top">
     <div>
-      <div class="eyebrow">Planejador da família · Gabriel, Débora, Regina, Dario, Laura e José</div>
+      <div class="eyebrow">Planejador da família · <span id="famNames"></span></div>
       <h1><span class="grad">Orlando &amp; Disney 2027</span> 🏰</h1>
     </div>
     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
@@ -112,7 +112,7 @@
     </div>
     <div class="grid g4">
       <div class="stat"><div class="lbl">Total em dinheiro</div><div class="val" id="stUSD">—</div><div class="note" id="stBRL"></div></div>
-      <div class="stat"><div class="lbl">Média por pessoa (6)</div><div class="val" id="stPP">—</div><div class="note" id="stPPBRL"></div></div>
+      <div class="stat"><div class="lbl" id="stPPLbl">Média por pessoa</div><div class="val" id="stPP">—</div><div class="note" id="stPPBRL"></div></div>
       <div class="stat"><div class="lbl">Duração</div><div class="val" id="stDias">—</div><div class="note">contando chegada e volta</div></div>
       <div class="stat"><div class="lbl">Dias de parque</div><div class="val" id="stParques">—</div><div class="note" id="stParquesNote"></div></div>
       <div class="stat"><div class="lbl">🐷 Cofrinho</div><div class="val" id="stCofre">—</div><div class="note" id="stCofreNote"></div></div>
@@ -126,14 +126,18 @@
         <ul class="kd-list" id="kdList"></ul>
       </div>
       <div class="card">
-        <h3>Documentos da família <span class="muted" style="font-weight:400;">— toque no status para alternar</span></h3>
+        <h3>Documentos da família <span class="muted" style="font-weight:400;">— edite nomes, toque no status para alternar</span></h3>
         <div class="pes-grid" id="pesGrid"></div>
+        <div class="toolbar" style="border-top:none; padding-top:8px; margin-top:6px;">
+          <button class="btn" id="addPessoa">+ Adicionar pessoa</button>
+          <span class="muted">Os valores por pessoa e rateios recalculam na hora.</span>
+        </div>
       </div>
     </div>
     <div class="grid g2 mt">
       <div class="card">
         <h3>A viagem num parágrafo</h3>
-        <p class="sub" style="font-size:14px; line-height:1.65;">Voo direto <b>Azul VCP → MCO</b> (~9h) emitido com as <b>650 mil milhas Azul Fidelidade</b> do cartão Skyline. Base no <b>Celebration Suites</b> (Old Town, Kissimmee), suíte 2 quartos/2 banheiros renovada, com minivan alugada. Ritmo: parque dia sim, dia não, com pausa de soneca do José (13h-16h). Seguro médico de US$ 175 mil pelo MasterAssist Black para os 6.</p>
+        <p class="sub" style="font-size:14px; line-height:1.65;">Voo direto <b>Azul VCP → MCO</b> (~9h) emitido com as <b>650 mil milhas Azul Fidelidade</b> do cartão Skyline. Base no <b>Celebration Suites</b> (Old Town, Kissimmee), suíte 2 quartos/2 banheiros renovada, com minivan alugada. Ritmo: parque dia sim, dia não, com pausa de soneca do José (13h-16h). Seguro médico de US$ 175 mil pelo MasterAssist Black para todos.</p>
       </div>
       <div class="card">
         <h3>Regras de ouro</h3>
@@ -186,11 +190,11 @@
         <div class="card">
           <h3>Por pessoa</h3>
           <div class="grid g4" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));">
-            <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">Média (÷6)</div><div class="val" id="ppUSD">—</div><div class="note" id="ppBRL"></div></div>
+            <div class="stat" style="border:none; background:var(--bg);"><div class="lbl" id="ppLbl">Média</div><div class="val" id="ppUSD">—</div><div class="note" id="ppBRL"></div></div>
             <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">Adultos (cada)</div><div class="val" id="ppAd">—</div><div class="note">tarifa cheia nos parques</div></div>
             <div class="stat" style="border:none; background:var(--bg);"><div class="lbl">José</div><div class="val" id="ppJose">—</div><div class="note">≈45% abaixo da média</div></div>
           </div>
-          <p class="muted mt">Rateio: custos compartilhados (hospedagem, carro, comida, taxas, seguro) divididos por 6 + gastos individuais. Laura fica ≈ R$ 500 abaixo dos adultos; José só paga os compartilhados.</p>
+          <p class="muted mt">Rateio: custos compartilhados (hospedagem, carro, comida, taxas, seguro) divididos igualmente entre todos + gastos individuais. Laura fica ≈ R$ 500 abaixo dos adultos; José só paga os compartilhados.</p>
         </div>
       </div>
       <div class="card">
@@ -327,7 +331,7 @@
         <h2>Orçamento de compras</h2>
         <div class="field"><label for="shopBudget">Orçamento por pessoa (US$)</label><input id="shopBudget" type="number" step="50" min="0" style="width:90px;"></div>
       </div>
-      <p class="muted" style="margin:2px 0 10px;">Itens marcados como "Família" são rateados entre os 6 no orçamento individual.</p>
+      <p class="muted" style="margin:2px 0 10px;">Itens marcados como "Família" são rateados entre todos no orçamento individual.</p>
       <div class="grid g4" id="shopBudgets" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));"></div>
     </div>
     <div class="card">
