@@ -12,7 +12,8 @@ var ASSETS = [
   './manifest.webmanifest',
   './icon.svg',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './baloo2-latin.woff2'
 ];
 
 self.addEventListener('install', function (e) {
