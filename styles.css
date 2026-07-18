@@ -244,6 +244,24 @@ table.custos tr.paid td, table.custos tr.paid input { color: var(--muted); }
 .dia-list li { font-size: 15px; line-height: 1.45; padding: 9px 12px; background: var(--bg); border-radius: 10px; }
 .dia-alturas { font-size: 18px; font-weight: 650; margin: 4px 0 12px; }
 .dia-emerg { border-color: var(--danger); }
+.mapa { height: 320px; border-radius: 12px; margin-top: 10px; border: 1px solid var(--line); z-index: 0; }
+.pin-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); font-family: var(--display); }
+:root[data-theme="dark"] .mapa .leaflet-tile { filter: brightness(.75) contrast(1.05) saturate(.85); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .mapa .leaflet-tile { filter: brightness(.75) contrast(1.05) saturate(.85); } }
+.paradas-list { display: grid; gap: 6px; margin-top: 12px; }
+.parada-row { display: grid; grid-template-columns: 26px 76px minmax(140px, 1.2fr) 1fr auto; gap: 8px; align-items: center; padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; }
+.parada-row .num { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center; font-family: var(--display); flex-shrink: 0; }
+.parada-row input[type="time"] { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 4px 6px; font: inherit; font-size: 12.5px; }
+.parada-row select { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 5px 6px; font: inherit; font-size: 12.5px; min-width: 0; }
+.parada-row input[type="text"] { border: 1px solid transparent; background: transparent; color: var(--ink); font: inherit; font-size: 13px; padding: 4px 6px; border-radius: 8px; min-width: 0; }
+.parada-row input[type="text"]:hover, .parada-row input[type="text"]:focus { border-color: var(--line); background: var(--bg); }
+.parada-row .acts { display: flex; gap: 2px; align-items: center; }
+.parada-row .acts button, .parada-row .acts a { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 5px; border-radius: 6px; text-decoration: none; }
+.parada-row .acts button:hover, .parada-row .acts a:hover { color: var(--accent-ink); background: var(--bg); }
+.parada-row .acts .del:hover { color: var(--danger); }
+.parada-dist { font-size: 11.5px; color: var(--muted); padding-left: 44px; font-variant-numeric: tabular-nums; }
+.parada-row.auto { opacity: .8; border-style: dashed; }
+@media (max-width: 560px) { .parada-row { grid-template-columns: 26px 1fr auto; } .parada-row input[type="time"], .parada-row input[type="text"] { grid-column: 2 / 3; } }
 .gasto-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 #gastoValor { font-size: 20px; font-weight: 700; width: 130px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
 #gastoNota { flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14px; }

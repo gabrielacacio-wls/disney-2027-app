@@ -13,7 +13,9 @@ var ASSETS = [
   './icon.svg',
   './icon-192.png',
   './icon-512.png',
-  './baloo2-latin.woff2'
+  './baloo2-latin.woff2',
+  './vendor/leaflet.js',
+  './vendor/leaflet.css'
 ];
 
 self.addEventListener('install', function (e) {

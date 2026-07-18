@@ -323,7 +323,45 @@ const { chromium } = require('playwright');
   check('família: remover pessoa recalcula e oferece desfazer', lblBack.includes('(7)') && undoVis, lblBack);
   await ctxF.close();
 
-  // 21. reset persiste após reload (gravação síncrona antes do reload)
+  // 21. paradas do dia + mapa (tiles do OSM bloqueados para o teste ficar offline)
+  const ctxM = await browser.newContext();
+  await ctxM.route('**/tile.openstreetmap.org/**', r => r.abort());
+  const pM = await ctxM.newPage();
+  await pM.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pM.waitForTimeout(700);
+  await pM.click('#tabbtn-hoje');
+  await pM.waitForTimeout(400);
+  const leafletOk = await pM.evaluate(() => !!window.L && !!document.querySelector('#mapa .leaflet-pane'));
+  check('mapa: Leaflet auto-hospedado inicializa', leafletOk);
+  // dia 1 (voo + check-in) infere MCO e hotel
+  const pins1 = await pM.locator('#mapa .pin-num').count();
+  const rows1 = await pM.locator('.parada-row').count();
+  check('mapa: paradas inferidas do roteiro do dia 1', pins1 >= 2 && rows1 >= 2, `pins=${pins1} rows=${rows1}`);
+  // dia 4 = Magic Kingdom
+  for (let k = 0; k < 3; k++) await pM.click('#diaNext');
+  await pM.waitForTimeout(300);
+  const mk = await pM.locator('.parada-row select').first().inputValue();
+  check('mapa: dia de Magic Kingdom aponta para o parque', mk === 'magic', mk);
+  // adicionar parada materializa e mostra distância
+  await pM.click('#addParada');
+  await pM.waitForTimeout(300);
+  await pM.locator('.parada-row select').last().selectOption('springs');
+  await pM.waitForTimeout(400);
+  const dist = await pM.locator('.parada-dist').count();
+  const rows2 = await pM.locator('.parada-row').count();
+  const autoOff = await pM.locator('.parada-row.auto').count();
+  check('mapa: adicionar parada vira lista editável com distâncias', rows2 === 2 && dist >= 1 && autoOff === 0, `rows=${rows2} dist=${dist}`);
+  // persiste após reload
+  await pM.reload({ waitUntil: 'load' });
+  await pM.waitForTimeout(700);
+  await pM.click('#tabbtn-hoje');
+  for (let k = 0; k < 3; k++) await pM.click('#diaNext');
+  await pM.waitForTimeout(300);
+  const rows3 = await pM.locator('.parada-row').count();
+  check('mapa: paradas persistem após reload', rows3 === 2, String(rows3));
+  await ctxM.close();
+
+  // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();
   p5.on('dialog', d => d.accept());
