@@ -176,7 +176,7 @@
     if (toastEl && toastEl.parentNode) toastEl.parentNode.removeChild(toastEl);
     toastEl = null; toastTimer = null;
   }
-  function showToast(msg, actionLabel, actionFn) {
+  function showToast(msg, actionLabel, actionFn, duration) {
     dismissToast();
     toastEl = document.createElement('div');
     toastEl.className = 'toast';
@@ -189,7 +189,7 @@
       toastEl.appendChild(bt);
     }
     document.body.appendChild(toastEl);
-    toastTimer = setTimeout(dismissToast, 6000);
+    toastTimer = setTimeout(dismissToast, duration || 6000);
   }
   function showUndo(msg, undoFn) { showToast(msg, 'Desfazer', undoFn); }
 
@@ -677,9 +677,22 @@
     var falta = Math.max(meta - saved, 0);
     var hoje = new Date(); var ini = pd(S.inicio);
     var meses = Math.max(1, Math.round((ini - hoje) / (30.44 * 86400000)));
-    document.getElementById('cofreRitmo').textContent = falta
+    var mesesComAporte = {};
+    S.cofre.aportes.forEach(function (a) { if (a.d && +a.v) mesesComAporte[a.d] = 1; });
+    var nMeses = Object.keys(mesesComAporte).length;
+    var media = nMeses ? saved / nMeses : 0;
+    var ritmo = falta
       ? 'Faltam ' + fmtBR(falta) + ' — ≈ ' + fmtBR(Math.ceil(falta / meses / 100) * 100) + '/mês nos próximos ' + meses + ' meses'
       : 'Meta batida! 🎉';
+    if (falta && media > 0) {
+      var mesesProj = Math.ceil(falta / media);
+      var pm = new Date(); pm.setDate(1); pm.setMonth(pm.getMonth() + mesesProj);
+      var lbl = MESES[pm.getMonth()].slice(0, 3) + '/' + pm.getFullYear();
+      var atrasa = pm > new Date(ini.getFullYear(), ini.getMonth(), 1);
+      ritmo += ' · no ritmo atual (' + fmtBR(media) + '/mês), meta em ' + lbl + (atrasa ? ' — depois do embarque!' : '');
+    }
+    document.getElementById('cofreRitmo').textContent = ritmo;
+    renderCofreChart(meta, media);
     var list = document.getElementById('cofreList'); list.innerHTML = '';
     S.cofre.aportes.slice().sort(function (a, b) { return a.d < b.d ? -1 : 1; }).forEach(function (ap) {
       var row = document.createElement('div'); row.className = 'cofre-item';
@@ -701,6 +714,67 @@
     document.getElementById('stCofre').textContent = Math.min(pct, 999) + '%';
     document.getElementById('stCofreNote').textContent = fmtBR(saved) + ' guardados';
   }
+  // Evolução do cofrinho: acumulado mensal (área + linha), meta tracejada
+  // como referência e projeção no ritmo médio dos meses com aporte.
+  function renderCofreChart(meta, media) {
+    var svg = document.getElementById('cofreChart');
+    var byMonth = {};
+    S.cofre.aportes.forEach(function (a) { if (a.d) byMonth[a.d] = (byMonth[a.d] || 0) + (+a.v || 0); });
+    var dataMonths = Object.keys(byMonth).sort();
+    svg.innerHTML = '';
+    if (!dataMonths.length || !meta) { svg.style.display = 'none'; return; }
+    svg.style.display = 'block';
+    function nextM(m) { var y = +m.slice(0, 4), mm = +m.slice(5, 7) + 1; if (mm > 12) { mm = 1; y++; } return y + '-' + String(mm).padStart(2, '0'); }
+    var endM = (S.inicio || '').slice(0, 7);
+    var lastData = dataMonths[dataMonths.length - 1];
+    if (endM < lastData) endM = lastData;
+    var list = [dataMonths[0]], guard = 0;
+    while (list[list.length - 1] < endM && guard++ < 60) list.push(nextM(list[list.length - 1]));
+    var cum = [], acc = 0;
+    list.forEach(function (m) { acc += byMonth[m] || 0; cum.push(acc); });
+    var liData = list.indexOf(lastData);
+    var W = 560, H = 190, T = 16, R = 12, B = 26, L = 12;
+    var maxY = Math.max(meta, cum[cum.length - 1]) * 1.08;
+    function X(i) { return L + (W - L - R) * (list.length === 1 ? 0.5 : i / (list.length - 1)); }
+    function Y(v) { return H - B - (H - T - B) * (v / maxY); }
+    var NS = 'http://www.w3.org/2000/svg';
+    function el(tag, attrs, text) {
+      var e = document.createElementNS(NS, tag);
+      Object.keys(attrs).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+      if (text != null) e.textContent = text;
+      svg.appendChild(e); return e;
+    }
+    el('line', { x1: L, x2: W - R, y1: Y(meta), y2: Y(meta), stroke: 'var(--muted)', 'stroke-width': 1, 'stroke-dasharray': '4 4', opacity: 0.8 });
+    el('text', { x: W - R, y: Y(meta) - 5, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' }, 'meta ' + fmtBR(meta));
+    var pts = [];
+    for (var i = 0; i <= liData; i++) pts.push(X(i) + ',' + Y(cum[i]));
+    el('polygon', { points: X(0) + ',' + Y(0) + ' ' + pts.join(' ') + ' ' + X(liData) + ',' + Y(0), fill: 'var(--accent-soft)', opacity: 0.7 });
+    el('polyline', { points: pts.join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2, 'stroke-linejoin': 'round' });
+    if (media > 0 && cum[liData] < meta) {
+      var proj = [X(liData) + ',' + Y(cum[liData])], v = cum[liData];
+      for (var j = liData + 1; j < list.length && v < meta; j++) {
+        v = Math.min(v + media, meta);
+        proj.push(X(j) + ',' + Y(v));
+      }
+      if (proj.length > 1) el('polyline', { points: proj.join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 2, 'stroke-dasharray': '3 5', opacity: 0.65 });
+    }
+    dataMonths.forEach(function (m) {
+      var i = list.indexOf(m);
+      var c = el('circle', { cx: X(i), cy: Y(cum[i]), r: 3.5, fill: 'var(--accent)', stroke: 'var(--card)', 'stroke-width': 2 });
+      var tip = document.createElementNS(NS, 'title');
+      tip.textContent = m.slice(5, 7) + '/' + m.slice(0, 4) + ' — acumulado ' + fmtBR(cum[i]) + ' (aporte ' + fmtBR(byMonth[m]) + ')';
+      c.appendChild(tip);
+    });
+    function mLbl(m) { return MESES[+m.slice(5, 7) - 1].slice(0, 3) + '/' + m.slice(2, 4); }
+    el('text', { x: L, y: H - 8, 'font-size': 11, fill: 'var(--muted)' }, mLbl(list[0]));
+    el('text', { x: W - R, y: H - 8, 'text-anchor': 'end', 'font-size': 11, fill: 'var(--muted)' },
+      (list[list.length - 1] === (S.inicio || '').slice(0, 7) ? '✈ ' : '') + mLbl(list[list.length - 1]));
+    if (list.length > 4) {
+      var mid = Math.round((list.length - 1) / 2);
+      el('text', { x: X(mid), y: H - 8, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--muted)' }, mLbl(list[mid]));
+    }
+  }
+
   document.getElementById('cofreMeta').value = S.cofre.meta || '';
   document.getElementById('cofreMeta').addEventListener('input', function () { S.cofre.meta = +this.value || 0; save(); renderCofre(); });
   document.getElementById('apMes').value = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
@@ -949,9 +1023,29 @@
     if (t && document.getElementById('tab-' + t)) setTab(t);
   })();
 
+  // ---------- alerta de prazos próximos (uma vez por dia) ----------
+  var KD_ALERT_KEY = 'disney2027-kd-alert';
+  function alertKeyDates() {
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    var hojeIso = iso(hoje);
+    var seen = null;
+    try { seen = localStorage.getItem(KD_ALERT_KEY); } catch (e) {}
+    if (seen === hojeIso) return;
+    var soon = keyDates().map(function (k) {
+      return { l: k.l, dias: Math.ceil((k.d - hoje) / 86400000) };
+    }).filter(function (k) { return k.dias >= 0 && k.dias <= 7; });
+    if (!soon.length) return;
+    var p = soon[0];
+    var quando = p.dias === 0 ? 'Hoje' : (p.dias === 1 ? 'Amanhã' : 'Em ' + p.dias + ' dias');
+    var msg = '⏰ ' + quando + ': ' + p.l + (soon.length > 1 ? ' — e mais ' + (soon.length - 1) + ' prazo' + (soon.length > 2 ? 's' : '') + ' nesta semana' : '');
+    showToast(msg, null, null, 10000);
+    try { localStorage.setItem(KD_ALERT_KEY, hojeIso); } catch (e) {}
+  }
+
   function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderCofre(); tickCountdown(); }
   renderAll();
   maybeBackupBanner();
+  alertKeyDates();
   fetchCambio(false);
 
   var cdTimer = setInterval(tickCountdown, 1000);

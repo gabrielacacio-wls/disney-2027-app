@@ -1,0 +1,37 @@
+# Carimba a versão do cache do service worker com o SHA do commit a cada
+# merge em main, para os navegadores descartarem o cache antigo sem que
+# ninguém precise lembrar de editar sw.js.
+name: Bump do cache do service worker
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'styles.css'
+      - 'app.js'
+      - 'manifest.webmanifest'
+      - 'icon*'
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Carimbar SHA no sw.js
+        run: |
+          SHORT=${GITHUB_SHA::7}
+          sed -i "s/var CACHE = 'disney2027-[^']*'/var CACHE = 'disney2027-$SHORT'/" sw.js
+          if git diff --quiet; then
+            echo "Nada a mudar."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sw.js
+          git commit -m "chore: cache do service worker -> $SHORT"
+          git push
