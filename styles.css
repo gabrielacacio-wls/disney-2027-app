@@ -194,9 +194,13 @@ ul.check li.done label { color: var(--muted); text-decoration: line-through; tex
 .kd-list li.past { opacity: .55; }
 .kd-list li.soon .kd-left { color: var(--gold); font-weight: 700; }
 .pes-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-top: 10px; }
-.pes { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
-.pes .nm { font-weight: 650; font-size: 14px; }
-.pes .role { font-size: 11.5px; color: var(--muted); }
+.pes { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.pes input.nm, .pes input.role { border: 1px solid transparent; background: transparent; font-family: inherit; border-radius: 6px; padding: 1px 4px; width: calc(100% - 20px); min-width: 0; }
+.pes input.nm { font-weight: 650; font-size: 14px; color: var(--ink); }
+.pes input.role { font-size: 11.5px; color: var(--muted); }
+.pes input:hover, .pes input:focus { border-color: var(--line); background: var(--bg); }
+.pes .del { position: absolute; top: 6px; right: 6px; background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 5px; border-radius: 6px; opacity: .6; }
+.pes .del:hover { color: var(--danger); opacity: 1; background: var(--bg); }
 .pes button.st { align-self: flex-start; border: none; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 2px; }
 .pes button.st.ok { background: var(--good-soft); color: var(--good); }
 .pes button.st.pend { background: var(--gold-soft); color: var(--gold); }
