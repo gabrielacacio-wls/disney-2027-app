@@ -192,6 +192,18 @@ table.custos tr.paid td, table.custos tr.paid input { color: var(--muted); }
 .dia-list li { font-size: 15px; line-height: 1.45; padding: 9px 12px; background: var(--bg); border-radius: 10px; }
 .dia-alturas { font-size: 18px; font-weight: 650; margin: 4px 0 12px; }
 .dia-emerg { border-color: var(--danger); }
+.gasto-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+#gastoValor { font-size: 20px; font-weight: 700; width: 130px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
+#gastoNota { flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14px; }
+.gasto-cats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-top: 10px; }
+.gasto-cats button { font-size: 14px; padding: 12px 6px; }
+.gasto-list { display: grid; gap: 4px; margin-top: 12px; }
+.gasto-item { display: flex; gap: 10px; align-items: center; font-size: 14px; padding: 6px 10px; border-radius: 8px; background: var(--bg); font-variant-numeric: tabular-nums; }
+.gasto-item .nt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+.gasto-item b { white-space: nowrap; }
+.gasto-item .del { background: none; border: none; color: var(--muted); cursor: pointer; border-radius: 6px; }
+.gasto-item .del:hover { color: var(--danger); }
+.glanc { font-size: 11px; color: var(--muted); text-align: right; white-space: nowrap; }
 .dia-tel { font-size: 18px; padding: 12px 18px; display: inline-block; margin-top: 6px; text-decoration: none; }
 #tab-hoje ul.check label { font-size: 15px; }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: 20px; z-index: 100; display: flex; align-items: center; gap: 12px; background: var(--ink); color: var(--card); padding: 10px 16px; border-radius: 12px; font-size: 13.5px; box-shadow: 0 6px 24px rgba(0,0,0,.25); max-width: calc(100vw - 32px); }

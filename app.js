@@ -22,6 +22,7 @@
     alturas: { jose: 86, laura: 108 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
+    gastos: [],
     malas: [
       { p: 'Todos', t: 'Passaportes + vistos', ok: false },
       { p: 'Todos', t: 'Certidões de nascimento das crianças (cópias)', ok: false },
@@ -128,6 +129,7 @@
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
       if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
       if (!s.diaCheck) s.diaCheck = {};
+      if (!s.gastos) s.gastos = [];
       return s;
     } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
   }
@@ -377,6 +379,8 @@
       inR.setAttribute('aria-label', 'Gasto real: ' + c.n);
       inR.addEventListener('input', function () { c.r = +inR.value || 0; save(); refreshSoon(); });
       tdR.appendChild(inR);
+      var gl = document.createElement('div'); gl.className = 'glanc'; gl.dataset.glanc = idx;
+      tdR.appendChild(gl);
       var td3 = document.createElement('td'); td3.className = 'num'; td3.dataset.brl = idx;
       var td4 = document.createElement('td'); td4.className = 'num'; td4.dataset.pct = idx;
       var tdP = document.createElement('td'); tdP.style.textAlign = 'center';
@@ -417,12 +421,17 @@
     document.getElementById('pagoUSD').textContent = fmtUS(pago);
     document.getElementById('faltaUSD').textContent = fmtUS(Math.max(tot - pago, 0));
     document.getElementById('faltaBRL').textContent = '(≈ ' + fmtBR(Math.max(tot - pago, 0) * S.cambio) + ')';
-    var real = S.custos.reduce(function (a, c) { return a + (+c.r || 0); }, 0);
+    var lanc = gastosPorLinha();
+    S.custos.forEach(function (c, idx) {
+      var el = document.querySelector('[data-glanc="' + idx + '"]');
+      if (el) el.textContent = lanc[idx] ? '+ ' + fmtUS2(lanc[idx]) + ' lançados' : '';
+    });
+    var real = S.custos.reduce(function (a, c) { return a + (+c.r || 0); }, 0) + gastosTotal();
     document.getElementById('totReal').textContent = real ? fmtUS(real) : '—';
     var rd = document.getElementById('realDelta');
     if (real) {
       var dif = real - tot;
-      rd.textContent = 'Real lançado: ' + fmtUS(real) + ' (' + (dif >= 0 ? '+' : '−') + fmtUS(Math.abs(dif)) + ' vs orçado)';
+      rd.textContent = 'Real (manual + lançamentos): ' + fmtUS(real) + ' (' + (dif >= 0 ? '+' : '−') + fmtUS(Math.abs(dif)) + ' vs orçado)';
       rd.style.color = dif > 0 ? 'var(--danger)' : 'var(--good)';
     } else { rd.textContent = ''; }
     renderCofre();
@@ -1212,6 +1221,43 @@
     if (t && document.getElementById('tab-' + t)) setTab(t);
   }
 
+  // ---------- gastos da viagem ----------
+  // Cada lançamento vira "real" na linha de custo correspondente (por
+  // palavra-chave no nome da linha); sem correspondência, só entra nos totais.
+  var GASTO_CATS = [
+    { k: 'comida', lbl: '🍔 Comida', re: /aliment|comida|mercado|restaurante/i },
+    { k: 'parques', lbl: '🎟️ Parques', re: /ingresso|disney|universal|legoland/i },
+    { k: 'carro', lbl: '🚗 Carro', re: /carro|minivan|gasolina|estacionamento/i },
+    { k: 'compras', lbl: '🛍️ Compras', re: /compras/i },
+    { k: 'hotel', lbl: '🏨 Hotel', re: /hospedagem|suites|hotel/i },
+    { k: 'outro', lbl: '✨ Outros', re: null }
+  ];
+  function gastoCat(k) {
+    for (var i = 0; i < GASTO_CATS.length; i++) if (GASTO_CATS[i].k === k) return GASTO_CATS[i];
+    return GASTO_CATS[GASTO_CATS.length - 1];
+  }
+  function gastoLinha(k) {
+    var cat = gastoCat(k);
+    if (cat.re) for (var i = 0; i < S.custos.length; i++) if (cat.re.test(S.custos[i].n)) return i;
+    return -1;
+  }
+  // soma dos lançamentos por linha de custo (-1 = sem linha correspondente)
+  function gastosPorLinha() {
+    var map = {};
+    S.gastos.forEach(function (g) {
+      var idx = gastoLinha(g.c);
+      map[idx] = (map[idx] || 0) + (+g.v || 0);
+    });
+    return map;
+  }
+  function gastosTotal(dia) {
+    return S.gastos.reduce(function (a, g) { return a + ((!dia || g.d === dia) ? (+g.v || 0) : 0); }, 0);
+  }
+  function fmtUS2(v) {
+    v = Math.round(v * 100) / 100;
+    return 'US$ ' + v.toLocaleString('pt-BR', { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 });
+  }
+
   // ---------- modo dia de parque (aba Hoje) ----------
   var DIA_MOCHILA = [
     'Garrafas de água (encher no parque)',
@@ -1304,6 +1350,7 @@
       document.getElementById('diaMochilaResumo').textContent = '— ' + done + ' de ' + DIA_MOCHILA.length;
     }
 
+    renderDiaGastos();
     document.getElementById('diaAlturas').textContent = 'José ' + S.alturas.jose + ' cm · Laura ' + S.alturas.laura + ' cm';
     var prox = days[i + 1];
     var proxEnt = prox ? (S.roteiro[prox] || { t: 'outro', d: '' }) : null;
@@ -1311,6 +1358,62 @@
       ? (TIPOS[proxEnt.t] || 'Outro') + ' — ' + (proxEnt.d || 'nada planejado ainda')
       : 'Último dia da viagem — boa volta para casa! ✈';
   }
+  function renderDiaGastos() {
+    var doDia = gastosTotal(diaSel);
+    document.getElementById('diaGastoResumo').textContent = doDia ? '— ' + fmtUS2(doDia) + ' neste dia' : '';
+    var list = document.getElementById('gastoList'); list.innerHTML = '';
+    S.gastos.forEach(function (g) {
+      if (g.d !== diaSel) return;
+      var row = document.createElement('div'); row.className = 'gasto-item';
+      var cat = document.createElement('span'); cat.textContent = gastoCat(g.c).lbl;
+      var nt = document.createElement('span'); nt.className = 'nt'; nt.textContent = g.n || '';
+      var vv = document.createElement('b'); vv.textContent = fmtUS2(+g.v || 0);
+      var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+      del.setAttribute('aria-label', 'Remover gasto de ' + fmtUS2(+g.v || 0));
+      del.addEventListener('click', function () {
+        var i = S.gastos.indexOf(g);
+        if (i < 0) return;
+        S.gastos.splice(i, 1); save(); renderDiaGastos(); refreshNumbers();
+        showUndo('Gasto de ' + fmtUS2(+g.v || 0) + ' removido', function () {
+          S.gastos.push(g); save(); renderDiaGastos(); refreshNumbers();
+        });
+      });
+      row.appendChild(cat); row.appendChild(nt); row.appendChild(vv); row.appendChild(del);
+      list.appendChild(row);
+    });
+    var tot = gastosTotal();
+    var txt = tot
+      ? 'Total lançado na viagem: ' + fmtUS2(tot)
+      : 'Nenhum gasto lançado ainda — os lançamentos alimentam a coluna "Real" da aba Custos.';
+    var lanc = gastosPorLinha();
+    var avisos = [];
+    Object.keys(lanc).forEach(function (idx) {
+      if (+idx < 0) return;
+      var c = S.custos[+idx];
+      if (c && +c.v && lanc[idx] > +c.v) avisos.push('⚠ ' + c.n.split(' (')[0] + ' ' + Math.round((lanc[idx] / +c.v - 1) * 100) + '% acima do orçado');
+    });
+    document.getElementById('gastoViagem').textContent = txt + (avisos.length ? ' · ' + avisos.join(' · ') : '');
+  }
+  function addGasto(k) {
+    var inV = document.getElementById('gastoValor');
+    var v = parseFloat(inV.value);
+    if (!v || v <= 0) { showToast('Digite o valor antes de tocar na categoria'); inV.focus(); return; }
+    var nota = document.getElementById('gastoNota').value.trim();
+    var g = { d: diaSel, v: Math.round(v * 100) / 100, c: k, n: nota };
+    S.gastos.push(g);
+    inV.value = ''; document.getElementById('gastoNota').value = '';
+    save(); renderDiaGastos(); refreshNumbers();
+    showUndo(fmtUS2(g.v) + ' lançado em ' + gastoCat(k).lbl, function () {
+      var i = S.gastos.indexOf(g);
+      if (i >= 0) { S.gastos.splice(i, 1); save(); renderDiaGastos(); refreshNumbers(); }
+    });
+  }
+  GASTO_CATS.forEach(function (c) {
+    var b = document.createElement('button'); b.className = 'btn'; b.textContent = c.lbl;
+    b.addEventListener('click', function () { addGasto(c.k); });
+    document.getElementById('gastoCats').appendChild(b);
+  });
+
   document.getElementById('diaPrev').addEventListener('click', function () {
     var days = tripDays(); var i = days.indexOf(diaSel);
     if (i > 0) { diaSel = days[i - 1]; renderDia(); }

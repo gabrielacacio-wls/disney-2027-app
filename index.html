@@ -74,6 +74,17 @@
         <p class="sub" id="diaAmanha" style="font-size:15px; line-height:1.6;"></p>
       </div>
     </div>
+    <div class="card mt">
+      <h3>💸 Gastos do dia <span class="muted" style="font-weight:400;" id="diaGastoResumo"></span></h3>
+      <div class="gasto-row">
+        <input type="number" id="gastoValor" placeholder="US$" min="0" step="0.01" inputmode="decimal" aria-label="Valor do gasto em dólares">
+        <input type="text" id="gastoNota" placeholder="nota (opcional) — ex.: almoço Cosmic Ray's" aria-label="Nota do gasto">
+      </div>
+      <p class="muted" style="margin:8px 0 0;">Digite o valor e toque na categoria — pronto, lançado.</p>
+      <div class="gasto-cats" id="gastoCats"></div>
+      <div class="gasto-list" id="gastoList"></div>
+      <p class="muted" id="gastoViagem" style="margin:10px 0 0;"></p>
+    </div>
     <div class="card mt dia-emerg">
       <h3>🚨 Emergência médica</h3>
       <p class="sub">Ligue para o seguro <b>ANTES</b> de qualquer atendimento (AIG / MasterAssist Black do cartão Skyline):</p>
