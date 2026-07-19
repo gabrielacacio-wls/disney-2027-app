@@ -32,9 +32,28 @@ self.addEventListener('activate', function (e) {
   );
 });
 
+/* HTML/JS/CSS principais: network-first — o app abre sempre na versão
+   mais nova quando há internet, e cai para o cache offline. Evita telas
+   com HTML novo + JS velho logo depois de uma atualização. Os demais
+   assets (fonte, ícones, Leaflet) seguem stale-while-revalidate. */
+var CORE_RE = /(\/|\/index\.html|\/app\.js|\/styles\.css)$/;
+
 self.addEventListener('fetch', function (e) {
   var url = new URL(e.request.url);
   if (e.request.method !== 'GET' || url.origin !== location.origin) return;
+  if (CORE_RE.test(url.pathname)) {
+    e.respondWith(
+      caches.open(CACHE).then(function (c) {
+        return fetch(e.request).then(function (resp) {
+          if (resp && resp.ok) c.put(e.request, resp.clone());
+          return resp;
+        }).catch(function () {
+          return c.match(e.request);
+        });
+      })
+    );
+    return;
+  }
   e.respondWith(
     caches.open(CACHE).then(function (c) {
       return c.match(e.request).then(function (cached) {
