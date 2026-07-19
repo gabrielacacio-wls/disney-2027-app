@@ -1339,7 +1339,7 @@
     { k: 'epcot', n: '🌍 EPCOT', lat: 28.3747, lng: -81.5494 },
     { k: 'hollywood', n: '🎬 Hollywood Studios', lat: 28.3575, lng: -81.5583 },
     { k: 'animal', n: '🦁 Animal Kingdom', lat: 28.3553, lng: -81.5901 },
-    { k: 'epic', n: '🌌 Epic Universe', lat: 28.4157, lng: -81.4590 },
+    { k: 'epic', n: '🌌 Epic Universe', lat: 28.4498, lng: -81.4680 },
     { k: 'universal', n: '🎢 Universal Studios', lat: 28.4794, lng: -81.4685 },
     { k: 'islands', n: '🦖 Islands of Adventure', lat: 28.4722, lng: -81.4700 },
     { k: 'citywalk', n: '🍔 Universal CityWalk', lat: 28.4743, lng: -81.4678 },
@@ -1390,7 +1390,22 @@
     var x = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
   }
-  var mapa = null, mapaLayer = null;
+  var mapa = null, mapaLayer = null, tileFalhou = false;
+  // em telas de toque, o arrastar fica travado até um toque explícito —
+  // senão o mapa engole a rolagem da página no celular
+  function travaMapa() {
+    var lock = document.createElement('div');
+    lock.className = 'mapa-lock';
+    var pill = document.createElement('span');
+    pill.className = 'mapa-lock-pill';
+    pill.textContent = '🔒 Toque para ativar o mapa';
+    lock.appendChild(pill);
+    lock.addEventListener('click', function () {
+      mapa.dragging.enable();
+      if (lock.parentNode) lock.parentNode.removeChild(lock);
+    });
+    mapa.getContainer().appendChild(lock);
+  }
   function renderMapa(stops) {
     var el = document.getElementById('mapa');
     if (!window.L) { el.style.display = 'none'; return; }
@@ -1398,11 +1413,24 @@
     stops.forEach(function (st) { var p = place(st.k); if (p) pts.push(p); });
     if (!mapa) {
       if (!document.getElementById('tab-hoje').classList.contains('on')) return;
-      mapa = L.map('mapa', { scrollWheelZoom: false });
-      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      var touch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
+      mapa = L.map('mapa', { scrollWheelZoom: false, dragging: !touch });
+      var tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 18, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       }).addTo(mapa);
+      tiles.on('tileerror', function () {
+        if (tileFalhou) return;
+        tileFalhou = true;
+        var n = document.getElementById('paradasNota');
+        n.textContent = '🌐 Sem conexão com o mapa agora — pinos e paradas continuam valendo; o fundo aparece quando a internet voltar. ' + n.textContent;
+      });
+      tiles.on('load', function () {
+        if (!tileFalhou) return;
+        tileFalhou = false;
+        renderParadas();
+      });
       mapaLayer = L.layerGroup().addTo(mapa);
+      if (touch) travaMapa();
     }
     mapaLayer.clearLayers();
     if (!pts.length) { mapa.setView([28.39, -81.51], 10); return; }

@@ -359,7 +359,24 @@ const { chromium } = require('playwright');
   await pM.waitForTimeout(300);
   const rows3 = await pM.locator('.parada-row').count();
   check('mapa: paradas persistem após reload', rows3 === 2, String(rows3));
+  const lockDesktop = await pM.locator('.mapa-lock').count();
+  check('mapa: sem trava de gesto no desktop', lockDesktop === 0, String(lockDesktop));
   await ctxM.close();
+
+  // 21b. no toque, o mapa nasce travado e destrava com um toque
+  const ctxT = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
+  await ctxT.route('**/tile.openstreetmap.org/**', r => r.abort());
+  const pT = await ctxT.newPage();
+  await pT.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pT.waitForTimeout(700);
+  await pT.click('#tabbtn-hoje');
+  await pT.waitForTimeout(500);
+  const lock1 = await pT.locator('.mapa-lock').count();
+  await pT.locator('.mapa-lock').click();
+  await pT.waitForTimeout(200);
+  const lock2 = await pT.locator('.mapa-lock').count();
+  check('mapa: trava de gesto no celular (aparece e destrava)', lock1 === 1 && lock2 === 0, `antes=${lock1} depois=${lock2}`);
+  await ctxT.close();
 
   // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
