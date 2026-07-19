@@ -226,6 +226,8 @@ const { chromium } = require('playwright');
   const aviso = await p6.locator('#diaAviso').isVisible();
   const dia1 = await p6.textContent('#diaDesc');
   check('dia de parque: prévia mostra o 1º dia', aviso && dia1.includes('Voo VCP'), dia1.slice(0, 50));
+  const climaMedia = await p6.textContent('#diaClima');
+  check('clima: média típica para datas distantes', climaMedia.includes('típico de abril'), climaMedia.slice(0, 60));
   await p6.click('#diaNext');
   await p6.click('#diaNext');
   await p6.click('#diaNext'); // dia 4 = Magic Kingdom
@@ -377,6 +379,37 @@ const { chromium } = require('playwright');
   const lock2 = await pT.locator('.mapa-lock').count();
   check('mapa: trava de gesto no celular (aparece e destrava)', lock1 === 1 && lock2 === 0, `antes=${lock1} depois=${lock2}`);
   await ctxT.close();
+
+  // 21c. clima: previsão real para dias próximos (Open-Meteo mockada)
+  const ctxC = await browser.newContext();
+  await ctxC.route('**/api.open-meteo.com/**', r => {
+    const isoL = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const days = [...Array(16)].map((_, i) => { const d = new Date(); d.setDate(d.getDate() + i); return isoL(d); });
+    r.fulfill({ json: { daily: {
+      time: days,
+      weather_code: days.map(() => 80),
+      temperature_2m_max: days.map(() => 31.6),
+      temperature_2m_min: days.map(() => 22.2),
+      precipitation_probability_max: days.map(() => 55)
+    } } });
+  });
+  await ctxC.route('**/tile.openstreetmap.org/**', r => r.abort());
+  const pC = await ctxC.newPage();
+  await pC.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pC.waitForTimeout(700);
+  const isoLoc = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const iniC = new Date(); iniC.setDate(iniC.getDate() - 1);
+  const fimC = new Date(); fimC.setDate(fimC.getDate() + 5);
+  await pC.evaluate(([a, b]) => {
+    const s = JSON.parse(localStorage.getItem('disney2027-planner-v1'));
+    s.inicio = a; s.fim = b;
+    localStorage.setItem('disney2027-planner-v1', JSON.stringify(s));
+  }, [isoLoc(iniC), isoLoc(fimC)]);
+  await pC.reload({ waitUntil: 'load' });
+  await pC.waitForTimeout(1500);
+  const climaReal = await pC.textContent('#diaClima');
+  check('clima: previsão real com Open-Meteo (32°/22°, 55% chuva)', climaReal.includes('32°') && climaReal.includes('55%'), climaReal.slice(0, 80));
+  await ctxC.close();
 
   // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
