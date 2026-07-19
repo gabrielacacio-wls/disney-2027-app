@@ -52,9 +52,18 @@
             <span class="chip gold" id="diaTag" hidden></span>
           </div>
           <div class="dia-clima" id="diaClima"></div>
+          <div style="margin-top:10px;"><button class="btn" id="diaShare">📤 Compartilhar o dia</button></div>
         </div>
         <button class="btn" id="diaNext" aria-label="Próximo dia">›</button>
       </div>
+    </div>
+    <div class="card" id="filasCard" style="margin-bottom:14px;" hidden>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <h3>🎢 Filas agora <span class="muted" style="font-weight:400;" id="filasInfo"></span></h3>
+        <button class="btn ghost" id="filasRefresh" title="Atualizar filas">↻ Atualizar</button>
+      </div>
+      <div class="filas-list" id="filasList"></div>
+      <p class="muted" style="margin:8px 0 0;">José e Laura: ✓ pode ir · ✗ ainda não alcança. Dados de <a href="https://queue-times.com/" target="_blank" rel="noopener">Queue-Times.com</a>.</p>
     </div>
     <div class="grid g2">
       <div class="card">

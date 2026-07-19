@@ -1637,6 +1637,172 @@
     save(); renderParadas();
   });
 
+  // ---------- filas dos parques (Queue-Times.com) ----------
+  // IDs descobertos dinamicamente pelo parks.json (nome → id). Tenta a
+  // chamada direta; se o navegador esbarrar em CORS, cai para um espelho.
+  var QT_PARKS_KEY = 'disney2027-qt-parks';
+  var QT_MATCH = {
+    magic: 'magic kingdom', epcot: 'epcot', hollywood: 'hollywood studios',
+    animal: 'animal kingdom', epic: 'epic universe', universal: 'universal studios florida',
+    islands: 'islands of adventure', legoland: 'legoland florida'
+  };
+  var RIDE_MIN = [
+    [/speedway|alien swirling/i, 81], [/yoshi|e\.?t\.? adventure/i, 86], [/barnstormer/i, 89],
+    [/trolls|cat in the hat|hippogriff|pteranodon/i, 92],
+    [/seven dwarfs|big thunder|slinky|falcon|smugglers|kali river/i, 97],
+    [/soarin|test track|rise of the resistance|tower of terror|tiana|mario kart|bowser|mine-cart|donkey kong|wing gliders|hiccup|ministry/i, 102],
+    [/cosmic rewind|guardians/i, 107],
+    [/space mountain|everest|flight of passage|mission: space/i, 112],
+    [/tron|rock 'n' roller|hagrid|stardust racers/i, 122],
+    [/velocicoaster/i, 130], [/hulk/i, 137]
+  ];
+  var qtCache = {}, qtBusy = false;
+  function qtFetch(path, ok, fail) {
+    var direta = 'https://queue-times.com' + path;
+    var espelho = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(direta);
+    fetch(direta).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(ok)
+      .catch(function () {
+        fetch(espelho).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(ok).catch(fail);
+      });
+  }
+  function qtParkId(placeKey, ok, fail) {
+    var frag = QT_MATCH[placeKey];
+    if (!frag) return fail();
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem(QT_PARKS_KEY) || 'null'); } catch (e) {}
+    function acha(lista) {
+      var id = null;
+      (lista || []).forEach(function (grupo) {
+        (grupo.parks || []).forEach(function (p) {
+          if (!id && (p.name || '').toLowerCase().indexOf(frag) >= 0) id = p.id;
+        });
+      });
+      return id;
+    }
+    if (cached && cached.at && Date.now() - cached.at < 7 * 86400000) {
+      var id = acha(cached.list);
+      return id ? ok(id) : fail();
+    }
+    qtFetch('/parks.json', function (list) {
+      try { localStorage.setItem(QT_PARKS_KEY, JSON.stringify({ at: Date.now(), list: list })); } catch (e) {}
+      var id = acha(list);
+      id ? ok(id) : fail();
+    }, fail);
+  }
+  function filasBadge(nome) {
+    var min = null;
+    RIDE_MIN.some(function (r) { if (r[0].test(nome)) { min = r[1]; return true; } return false; });
+    if (min == null) return null;
+    var j = S.alturas.jose >= min, l = S.alturas.laura >= min;
+    return { min: min, j: j, l: l };
+  }
+  function renderFilas() {
+    var card = document.getElementById('filasCard');
+    var parkKey = null, parkPlace = null;
+    paradasDoDia(diaSel).some(function (st) {
+      if (QT_MATCH[st.k]) { parkKey = st.k; parkPlace = place(st.k); return true; }
+      return false;
+    });
+    if (!parkKey) { card.hidden = true; return; }
+    card.hidden = false;
+    var info = document.getElementById('filasInfo');
+    var list = document.getElementById('filasList');
+    var cacheHit = qtCache[parkKey];
+    if (cacheHit && Date.now() - cacheHit.at < 5 * 60000) return pinta(cacheHit.data);
+    if (qtBusy) return;
+    qtBusy = true;
+    info.textContent = '— ' + parkPlace.n.replace(/^\S+\s/, '') + ' · carregando…';
+    list.innerHTML = '';
+    qtParkId(parkKey, function (id) {
+      qtFetch('/parks/' + id + '/queue_times.json', function (data) {
+        qtBusy = false;
+        qtCache[parkKey] = { at: Date.now(), data: data };
+        pinta(data);
+      }, erro);
+    }, erro);
+    function erro() {
+      qtBusy = false;
+      info.textContent = '— ' + parkPlace.n.replace(/^\S+\s/, '');
+      list.innerHTML = '';
+      var p = document.createElement('div'); p.className = 'fila-row';
+      p.textContent = '🌐 Não consegui carregar as filas agora — tente o ↻ com internet.';
+      list.appendChild(p);
+    }
+    function pinta(data) {
+      var rides = [];
+      (data.lands || []).forEach(function (l) { (l.rides || []).forEach(function (r) { rides.push(r); }); });
+      (data.rides || []).forEach(function (r) { rides.push(r); });
+      var abertas = rides.filter(function (r) { return r.is_open; }).sort(function (a, b) { return b.wait_time - a.wait_time; });
+      var fechadas = rides.length - abertas.length;
+      info.textContent = '— ' + parkPlace.n.replace(/^\S+\s/, '') + ' · agora';
+      list.innerHTML = '';
+      abertas.forEach(function (r) {
+        var row = document.createElement('div');
+        row.className = 'fila-row' + (r.wait_time >= 60 ? ' longa' : (r.wait_time <= 15 ? ' curta' : ''));
+        var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = r.name;
+        var b = filasBadge(r.name);
+        var kids = document.createElement('span'); kids.className = 'kids';
+        if (b) {
+          kids.innerHTML = '';
+          var bj = document.createElement('b'); bj.className = b.j ? 'sim' : 'nao'; bj.textContent = 'J' + (b.j ? '✓' : '✗');
+          var bl = document.createElement('b'); bl.className = b.l ? 'sim' : 'nao'; bl.textContent = ' L' + (b.l ? '✓' : '✗');
+          kids.appendChild(bj); kids.appendChild(bl);
+          kids.title = 'Altura mínima ' + b.min + ' cm';
+        }
+        var wt = document.createElement('span'); wt.className = 'wt'; wt.textContent = r.wait_time + ' min';
+        row.appendChild(nm); row.appendChild(kids); row.appendChild(wt);
+        list.appendChild(row);
+      });
+      if (!abertas.length) {
+        var vazio = document.createElement('div'); vazio.className = 'fila-row';
+        vazio.textContent = 'Nenhuma atração aberta agora (parque fechado?).';
+        list.appendChild(vazio);
+      }
+      if (fechadas > 0) {
+        var f = document.createElement('div'); f.className = 'fila-row';
+        f.style.opacity = '.6';
+        f.textContent = fechadas + ' atração' + (fechadas > 1 ? 'ões' : '') + ' fechada' + (fechadas > 1 ? 's' : '') + ' no momento';
+        list.appendChild(f);
+      }
+    }
+  }
+  document.getElementById('filasRefresh').addEventListener('click', function () {
+    Object.keys(qtCache).forEach(function (k) { delete qtCache[k]; });
+    renderFilas();
+  });
+
+  // ---------- compartilhar o dia ----------
+  function textoDoDia() {
+    var days = tripDays();
+    var i = days.indexOf(diaSel);
+    var ent = S.roteiro[diaSel] || { t: 'outro', d: '' };
+    var dt = pd(diaSel);
+    var linhas = ['🏰 *Disney 2027 — ' + DIAS_SEM[dt.getDay()] + ', ' + String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0') + '* (dia ' + (i + 1) + ' de ' + days.length + ')'];
+    linhas.push((TIPOS[ent.t] || 'Dia') + ': ' + (ent.d || 'sem plano ainda'));
+    var clima = document.getElementById('diaClima').textContent;
+    if (clima && clima.indexOf('carregando') < 0) linhas.push('Clima: ' + clima);
+    var stops = paradasDoDia(diaSel);
+    if (stops.length) {
+      linhas.push('Paradas: ' + stops.map(function (st) {
+        var p = place(st.k);
+        var nome = p ? p.n.replace(/^\S+\s/, '') : (st.o || 'parada');
+        return (st.h ? st.h + ' ' : '') + nome;
+      }).join(' → '));
+    }
+    var lemb = diaLembretes(ent).slice(0, 3).join('\n• ');
+    if (lemb) linhas.push('Lembretes:\n• ' + lemb);
+    linhas.push('_do Planejador da família_');
+    return linhas.join('\n');
+  }
+  document.getElementById('diaShare').addEventListener('click', function () {
+    var txt = textoDoDia();
+    if (navigator.share) {
+      navigator.share({ text: txt }).catch(function () {});
+    } else {
+      window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+    }
+  });
+
   // ---------- clima do dia ----------
   // Open-Meteo (sem chave): previsão real até 16 dias; além disso, a média
   // climática típica de Orlando no mês. Offline cai na média também.
@@ -1830,6 +1996,7 @@
 
     renderParadas();
     renderDiaClima();
+    renderFilas();
     renderDiaGastos();
     document.getElementById('diaAlturas').textContent = 'José ' + S.alturas.jose + ' cm · Laura ' + S.alturas.laura + ' cm';
     var prox = days[i + 1];
