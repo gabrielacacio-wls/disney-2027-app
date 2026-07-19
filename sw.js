@@ -3,7 +3,7 @@
    offline no parque) e atualiza o cache em segundo plano a cada visita.
    A versão do cache é carimbada automaticamente com o SHA do commit pelo
    workflow bump-sw-cache.yml a cada merge em main. */
-var CACHE = 'disney2027-6dc1190';
+var CACHE = 'disney2027-7a18b6b';
 var ASSETS = [
   './',
   './index.html',
