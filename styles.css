@@ -265,6 +265,21 @@ table.custos tr.paid td, table.custos tr.paid input { color: var(--muted); }
 .parada-dist { font-size: 11.5px; color: var(--muted); padding-left: 44px; font-variant-numeric: tabular-nums; }
 .parada-row.auto { opacity: .8; border-style: dashed; }
 @media (max-width: 560px) { .parada-row { grid-template-columns: 26px 1fr auto; } .parada-row input[type="time"], .parada-row input[type="text"] { grid-column: 2 / 3; } }
+.doc-row { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; display: grid; gap: 6px; }
+.doc-head { display: flex; gap: 8px; align-items: center; }
+.doc-head .st-dot { flex-shrink: 0; font-size: 12px; }
+.doc-head input.tt { flex: 1; min-width: 0; font-weight: 600; font-size: 13.5px; border: 1px solid transparent; background: transparent; color: var(--ink); font-family: inherit; padding: 2px 6px; border-radius: 6px; }
+.doc-head input.tt:hover, .doc-head input.tt:focus { border-color: var(--line); background: var(--bg); }
+.doc-head a.abre { text-decoration: none; font-size: 14px; padding: 2px 6px; border-radius: 6px; }
+.doc-head a.abre:hover { background: var(--bg); }
+.doc-head .del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px; padding: 2px 5px; border-radius: 6px; }
+.doc-head .del:hover { color: var(--danger); }
+.doc-fields { display: grid; grid-template-columns: 1fr 132px 1.4fr; gap: 6px; }
+.doc-fields input { border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 8px; padding: 5px 8px; font: inherit; font-size: 12.5px; min-width: 0; }
+.doc-warn { font-size: 11.5px; color: var(--gold); font-weight: 700; }
+.docs-group { margin-bottom: 14px; }
+.docs-group .list { display: grid; gap: 6px; }
+@media (max-width: 560px) { .doc-fields { grid-template-columns: 1fr; } }
 .gasto-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
 #gastoValor { font-size: 20px; font-weight: 700; width: 130px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font-variant-numeric: tabular-nums; }
 #gastoNota { flex: 1; min-width: 160px; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 10px; padding: 10px 12px; font: inherit; font-size: 14px; }

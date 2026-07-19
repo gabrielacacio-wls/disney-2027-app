@@ -101,6 +101,7 @@
       <h3>🚨 Emergência médica</h3>
       <p class="sub">Ligue para o seguro <b>ANTES</b> de qualquer atendimento (AIG / MasterAssist Black do cartão Skyline):</p>
       <a class="btn dia-tel" href="tel:+18006278372">📞 1-800-627-8372</a>
+      <button class="btn" id="diaVerDocs" style="margin-left:8px;">🔐 Documentos &amp; reservas</button>
     </div>
   </section>
 
@@ -367,6 +368,19 @@
       <div id="syncOn" class="toolbar" style="border-top:none; padding-top:0; margin-top:0;" hidden>
         <button class="btn" id="btnSyncNow">Sincronizar agora</button>
         <button class="btn ghost" id="btnSyncOff">Desconectar este aparelho</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:14px;" id="docsCard">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px;">
+        <h2>🔐 Documentos &amp; reservas</h2>
+        <span class="muted" id="docsResumo"></span>
+      </div>
+      <p class="muted" style="margin:2px 0 10px;">Números, localizadores e validades ficam aqui (offline e sincronizados). Guarde o PDF/foto no Google Drive ou iCloud e cole o link — abre com um toque no 🔗.</p>
+      <div id="docsGroups"></div>
+      <div class="toolbar">
+        <select id="docNovoCat" style="border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:6px 8px; font:inherit; font-size:13px;"></select>
+        <button class="btn" id="addDoc">+ Adicionar</button>
+        <span class="muted">Compartilhe os arquivos do Drive só com a família.</span>
       </div>
     </div>
     <div class="card" style="margin-bottom:14px;">
