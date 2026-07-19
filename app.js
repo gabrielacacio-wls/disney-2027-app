@@ -119,6 +119,50 @@
     ]
   };
 
+  // datas-limite dos itens do checklist: casos específicos + teto da fase
+  var CHECK_DATAS = [
+    [/validade dos 5 passaportes/, '2026-08-15'],
+    [/saldo de 650 mil/, '2026-08-10'],
+    [/alertas de emissão/, '2026-08-15'],
+    [/Passaporte do José/, '2026-08-31'],
+    [/Passaporte da Marília/, '2026-08-31'],
+    [/DS-160/, '2026-09-30'],
+    [/ingressos Disney num dia de real forte/, '2026-09-30'],
+    [/Reservar Celebration/, '2026-10-15'],
+    [/Entrevistas de visto/, '2026-10-31'],
+    [/Emitir as 4 passagens/, '2026-11-30'],
+    [/passagens no cartão deles/, '2026-11-30'],
+    [/Universal 3 dias.*Black Friday/, '2026-12-09'],
+    [/Vistos dos 4/, '2026-12-31'],
+    [/minivan/, '2027-01-31'],
+    [/reservas de restaurantes/, '2027-02-22'],
+    [/apólice do cartão/, '2027-03-15'],
+    [/Lightning Lane e comprar Multi Pass/, '2027-03-31'],
+    [/bilhetes de seguro AIG/, '2027-03-31'],
+    [/Cadastrar os 7/, '2027-03-31'],
+    [/Remedir as alturas/, '2027-04-16'],
+    [/Documentos na mão/, '2027-04-20'],
+    [/Receitas médicas/, '2027-04-20'],
+    [/Check-in online/, '2027-04-22']
+  ];
+  var FASE_LIMITE = {
+    'Agora (jul–ago/2026)': '2026-08-31',
+    'Ago–nov/2026': '2026-11-30',
+    'Nov/2026–jan/2027': '2027-01-31',
+    'Fev–mar/2027': '2027-03-31',
+    'Semana da viagem': '2027-04-21'
+  };
+  function ensureCheckDates(s) {
+    if (s.flags.checkDatas) return;
+    s.checklist.forEach(function (i) {
+      if (i.d) return;
+      var d = null;
+      CHECK_DATAS.some(function (r) { if (r[0].test(i.t)) { d = r[1]; return true; } return false; });
+      i.d = d || FASE_LIMITE[i.f] || '';
+    });
+    s.flags.checkDatas = true;
+  }
+
   // catálogo inicial de documentos/reservas, montado a partir das pessoas
   function seedDocs(pessoas) {
     var out = [];
@@ -145,6 +189,7 @@
       if (!raw) {
         var d0 = JSON.parse(JSON.stringify(DEF));
         d0.docs = seedDocs(d0.pessoas);
+        ensureCheckDates(d0);
         return d0;
       }
       var s = JSON.parse(raw);
@@ -207,10 +252,12 @@
       if (!s.gastos) s.gastos = [];
       if (!s.paradas) s.paradas = {};
       if (!s.docs) s.docs = seedDocs(s.pessoas);
+      ensureCheckDates(s);
       return s;
     } catch (e) {
       var dErr = JSON.parse(JSON.stringify(DEF));
       dErr.docs = seedDocs(dErr.pessoas);
+      ensureCheckDates(dErr);
       return dErr;
     }
   }
@@ -357,13 +404,26 @@
     document.getElementById('pgPct').textContent = pct + '%';
     document.getElementById('pgTxt').textContent = done + ' de ' + S.checklist.length + ' itens concluídos';
     document.getElementById('pgBar').style.width = pct + '%';
-    var next = S.checklist.filter(function (i) { return !i.ok; }).slice(0, 4);
+    // pendências ordenadas pela data-limite real (sem data vai para o fim)
+    var hoje0 = new Date(); hoje0.setHours(0, 0, 0, 0);
+    var next = S.checklist.filter(function (i) { return !i.ok; }).sort(function (a, b) {
+      return (a.d || '9999') < (b.d || '9999') ? -1 : 1;
+    }).slice(0, 5);
     var ul = document.getElementById('nextList'); ul.innerHTML = '';
     next.forEach(function (i) {
       var li = document.createElement('li');
       var ph = document.createElement('span'); ph.className = 'ph'; ph.textContent = i.f.split(' (')[0];
-      var tx = document.createElement('span'); tx.textContent = i.t;
-      li.appendChild(ph); li.appendChild(tx); ul.appendChild(li);
+      var tx = document.createElement('span'); tx.textContent = i.t; tx.style.flex = '1';
+      li.appendChild(ph); li.appendChild(tx);
+      if (i.d) {
+        var dias = Math.ceil((pd(i.d) - hoje0) / 86400000);
+        var lf = document.createElement('span'); lf.className = 'kd-left';
+        if (dias < 0) { lf.textContent = 'atrasado ' + (-dias) + ' d'; lf.style.color = 'var(--danger)'; lf.style.fontWeight = '700'; }
+        else if (dias === 0) { lf.textContent = 'hoje!'; lf.style.color = 'var(--gold)'; lf.style.fontWeight = '700'; }
+        else { lf.textContent = 'em ' + dias + ' d'; if (dias <= 14) { lf.style.color = 'var(--gold)'; lf.style.fontWeight = '700'; } }
+        li.appendChild(lf);
+      }
+      ul.appendChild(li);
     });
     if (!next.length) { var li2 = document.createElement('li'); li2.textContent = 'Tudo pronto! 🎉'; ul.appendChild(li2); }
     renderKeyDates(); renderPessoas();
@@ -459,17 +519,23 @@
   document.getElementById('btnIcs').addEventListener('click', function () {
     var stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Planejador Disney 2027//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Disney 2027 — datas-chave'];
-    keyDates().forEach(function (k, i) {
+    function evento(uid, d, titulo) {
       lines.push(
         'BEGIN:VEVENT',
-        'UID:disney2027-kd-' + i + '-' + icsDate(k.d) + '@planejador',
+        'UID:' + uid + '@planejador',
         'DTSTAMP:' + stamp,
-        'DTSTART;VALUE=DATE:' + icsDate(k.d),
-        'DTEND;VALUE=DATE:' + icsDate(addDays(k.d, 1)),
-        'SUMMARY:' + icsEscape('🏰 ' + k.l),
-        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(k.l), 'TRIGGER:-P1D', 'END:VALARM',
+        'DTSTART;VALUE=DATE:' + icsDate(d),
+        'DTEND;VALUE=DATE:' + icsDate(addDays(d, 1)),
+        'SUMMARY:' + icsEscape(titulo),
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(titulo), 'TRIGGER:-P7D', 'END:VALARM',
+        'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(titulo), 'TRIGGER:-P1D', 'END:VALARM',
         'END:VEVENT'
       );
+    }
+    keyDates().forEach(function (k, i) { evento('disney2027-kd-' + i + '-' + icsDate(k.d), k.d, '🏰 ' + k.l); });
+    S.checklist.forEach(function (i, idx) {
+      if (!i.d || i.ok) return;
+      evento('disney2027-ck-' + idx, pd(i.d), '📋 ' + i.t);
     });
     lines.push('END:VCALENDAR');
     var blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
@@ -731,11 +797,20 @@
       var ul = document.createElement('ul'); ul.className = 'check';
       itens.forEach(function (i) {
         var li = document.createElement('li'); if (i.ok) li.classList.add('done');
+        var dias = i.d ? Math.ceil((pd(i.d) - new Date().setHours(0, 0, 0, 0)) / 86400000) : null;
+        if (!i.ok && dias != null) {
+          if (dias < 0) li.classList.add('late');
+          else if (dias <= 14) li.classList.add('soonck');
+        }
         var id = 'ck-' + S.checklist.indexOf(i);
         var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = i.ok; cb.id = id;
         cb.addEventListener('change', function () { i.ok = cb.checked; save(); renderCheck(); renderDash(); });
-        var lb = document.createElement('label'); lb.textContent = i.t; lb.setAttribute('for', id);
-        li.appendChild(cb); li.appendChild(lb); ul.appendChild(li);
+        var lb = document.createElement('label'); lb.textContent = i.t; lb.setAttribute('for', id); lb.style.flex = '1';
+        var dtIn = document.createElement('input'); dtIn.type = 'date'; dtIn.className = 'ck-date'; dtIn.value = i.d || '';
+        dtIn.title = 'Data-limite deste item';
+        dtIn.setAttribute('aria-label', 'Data-limite: ' + i.t);
+        dtIn.addEventListener('change', function () { i.d = dtIn.value; save(); renderCheck(); renderDash(); });
+        li.appendChild(cb); li.appendChild(lb); li.appendChild(dtIn); ul.appendChild(li);
       });
       ph.appendChild(ul); box.appendChild(ph);
     });
@@ -2079,13 +2154,25 @@
     var seen = null;
     try { seen = localStorage.getItem(KD_ALERT_KEY); } catch (e) {}
     if (seen === hojeIso) return;
-    var soon = keyDates().map(function (k) {
+    var todos = keyDates().map(function (k) {
       return { l: k.l, dias: Math.ceil((k.d - hoje) / 86400000) };
-    }).filter(function (k) { return k.dias >= 0 && k.dias <= 7; });
-    if (!soon.length) return;
-    var p = soon[0];
-    var quando = p.dias === 0 ? 'Hoje' : (p.dias === 1 ? 'Amanhã' : 'Em ' + p.dias + ' dias');
-    var msg = '⏰ ' + quando + ': ' + p.l + (soon.length > 1 ? ' — e mais ' + (soon.length - 1) + ' prazo' + (soon.length > 2 ? 's' : '') + ' nesta semana' : '');
+    });
+    S.checklist.forEach(function (i) {
+      if (i.ok || !i.d) return;
+      todos.push({ l: i.t, dias: Math.ceil((pd(i.d) - hoje) / 86400000), ck: true });
+    });
+    // itens do checklist atrasados gritam primeiro; depois, o prazo mais próximo
+    var atrasados = todos.filter(function (k) { return k.ck && k.dias < 0; }).sort(function (a, b) { return a.dias - b.dias; });
+    var soon = todos.filter(function (k) { return k.dias >= 0 && k.dias <= 7; }).sort(function (a, b) { return a.dias - b.dias; });
+    var msg = null;
+    if (atrasados.length) {
+      msg = '🚨 Em atraso: ' + atrasados[0].l + (atrasados.length > 1 ? ' — e mais ' + (atrasados.length - 1) + ' item' + (atrasados.length > 2 ? 's' : '') + ' atrasado' + (atrasados.length > 2 ? 's' : '') : '');
+    } else if (soon.length) {
+      var p = soon[0];
+      var quando = p.dias === 0 ? 'Hoje' : (p.dias === 1 ? 'Amanhã' : 'Em ' + p.dias + ' dias');
+      msg = '⏰ ' + quando + ': ' + p.l + (soon.length > 1 ? ' — e mais ' + (soon.length - 1) + ' prazo' + (soon.length > 2 ? 's' : '') + ' nesta semana' : '');
+    }
+    if (!msg) return;
     showToast(msg, null, null, 10000);
     try { localStorage.setItem(KD_ALERT_KEY, hojeIso); } catch (e) {}
   }
