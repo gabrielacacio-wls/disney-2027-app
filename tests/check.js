@@ -451,6 +451,49 @@ const { chromium } = require('playwright');
   check('docs: persiste e atalho da emergência funciona', checkOn && persist.includes('1 de 25'), `on=${checkOn} ${persist}`);
   await ctxD.close();
 
+  // 21e. filas ao vivo (Queue-Times mockada) + compartilhar o dia
+  const ctxQ = await browser.newContext();
+  await ctxQ.route('**/tile.openstreetmap.org/**', r => r.abort());
+  await ctxQ.route('**/wa.me/**', r => r.fulfill({ status: 200, contentType: 'text/html', body: 'ok' }));
+  await ctxQ.route('**/queue-times.com/**', r => {
+    const url = r.request().url();
+    if (url.includes('/parks.json')) {
+      return r.fulfill({ json: [{ name: 'Walt Disney Attractions', parks: [
+        { id: 6, name: 'Magic Kingdom' }, { id: 5, name: 'Epcot' },
+        { id: 7, name: "Disney's Hollywood Studios" }, { id: 8, name: "Disney's Animal Kingdom" }
+      ] }] });
+    }
+    if (url.includes('/parks/6/queue_times.json')) {
+      return r.fulfill({ json: { lands: [{ name: 'Fantasyland', rides: [
+        { name: 'Seven Dwarfs Mine Train', is_open: true, wait_time: 75 },
+        { name: "Peter Pan's Flight", is_open: true, wait_time: 40 },
+        { name: 'Space Mountain', is_open: false, wait_time: 0 }
+      ] }] } });
+    }
+    return r.fulfill({ status: 404, json: {} });
+  });
+  const pQ = await ctxQ.newPage();
+  await pQ.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pQ.waitForTimeout(700);
+  await pQ.click('#tabbtn-hoje');
+  await pQ.waitForTimeout(300);
+  const filasDia1 = await pQ.locator('#filasCard').isHidden();
+  check('filas: card oculto em dia sem parque', filasDia1);
+  for (let k = 0; k < 3; k++) await pQ.click('#diaNext'); // dia 4: Magic Kingdom
+  await pQ.waitForTimeout(800);
+  const filasTxt = await pQ.textContent('#filasList');
+  const filasInfo = await pQ.textContent('#filasInfo');
+  check('filas: tempos ao vivo do parque do dia', filasInfo.includes('Magic Kingdom') && filasTxt.includes('75 min') && filasTxt.includes('Seven Dwarfs'), filasInfo);
+  const badge = await pQ.locator('.fila-row').first().locator('.kids').textContent();
+  check('filas: badge de altura (Seven Dwarfs 97cm: J✗ L✓)', badge.includes('J✗') && badge.includes('L✓'), badge);
+  check('filas: fechadas contabilizadas', filasTxt.includes('1 atração fechada'), '');
+  // compartilhar o dia abre wa.me com o resumo
+  const [pop] = await Promise.all([pQ.waitForEvent('popup'), pQ.click('#diaShare')]);
+  const waUrl = decodeURIComponent(pop.url());
+  check('compartilhar: wa.me com resumo do dia', waUrl.includes('wa.me') && waUrl.includes('Magic Kingdom') && waUrl.includes('Paradas:'), waUrl.slice(0, 80));
+  await pop.close();
+  await ctxQ.close();
+
   // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();
