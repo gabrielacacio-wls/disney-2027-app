@@ -184,6 +184,11 @@ ul.check li:hover { background: var(--bg); }
 ul.check input[type="checkbox"] { width: 17px; height: 17px; margin-top: 2px; accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
 ul.check label { font-size: 14px; cursor: pointer; }
 ul.check li.done label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+ul.check .ck-date { border: 1px solid transparent; background: transparent; color: var(--muted); font-family: inherit; font-size: 11.5px; border-radius: 6px; padding: 2px 4px; flex-shrink: 0; }
+ul.check .ck-date:hover, ul.check .ck-date:focus { border-color: var(--line); background: var(--bg); }
+ul.check li.late .ck-date { color: var(--danger); font-weight: 700; }
+ul.check li.soonck .ck-date { color: var(--gold); font-weight: 700; }
+ul.check li.done .ck-date { opacity: .5; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 16px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
 .muted { color: var(--muted); font-size: 12.5px; }
 .mt { margin-top: 14px; }

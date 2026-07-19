@@ -85,7 +85,8 @@ const { chromium } = require('playwright');
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#btnIcs')]);
   const icsPath = await dl.path();
   const ics = require('fs').readFileSync(icsPath, 'utf8');
-  check('.ics baixa com VEVENTs', ics.includes('BEGIN:VCALENDAR') && (ics.match(/BEGIN:VEVENT/g) || []).length === 11);
+  const nEventos = (ics.match(/BEGIN:VEVENT/g) || []).length;
+  check('.ics com datas-chave + itens do checklist e alarmes 7d/1d', ics.includes('BEGIN:VCALENDAR') && nEventos >= 30 && ics.includes('DS-160') && ics.includes('TRIGGER:-P7D'), nEventos + ' eventos');
 
   // 10. link de compartilhamento (ida e volta)
   await page.click('#tabbtn-check');
@@ -159,7 +160,13 @@ const { chromium } = require('playwright');
   await p3.click('#tabbtn-cal');
   await p3.fill('#dtIni', soon);
   await p3.waitForTimeout(500);
-  await p3.evaluate(() => localStorage.removeItem('disney2027-kd-alert'));
+  await p3.evaluate(() => {
+    // datas do checklist para longe, para o alerta do embarque ser determinístico
+    const s = JSON.parse(localStorage.getItem('disney2027-planner-v1'));
+    s.checklist.forEach(i => { i.d = '2030-01-01'; });
+    localStorage.setItem('disney2027-planner-v1', JSON.stringify(s));
+    localStorage.removeItem('disney2027-kd-alert');
+  });
   await p3.reload({ waitUntil: 'load' });
   await p3.waitForTimeout(1000);
   const alertText = (await p3.locator('.toast').count()) ? await p3.textContent('.toast') : '';
@@ -493,6 +500,34 @@ const { chromium } = require('playwright');
   check('compartilhar: wa.me com resumo do dia', waUrl.includes('wa.me') && waUrl.includes('Magic Kingdom') && waUrl.includes('Paradas:'), waUrl.slice(0, 80));
   await pop.close();
   await ctxQ.close();
+
+  // 21f. prazos do checklist: seed de datas, alerta de atraso, ordenação
+  const ctxP = await browser.newContext();
+  const pP = await ctxP.newPage();
+  await pP.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pP.waitForTimeout(700);
+  await pP.click('#tabbtn-check');
+  const nDatas = await pP.locator('ul.check .ck-date').count();
+  const dsDate = await pP.evaluate(() => {
+    const li = [...document.querySelectorAll('ul.check li')].find(l => l.textContent.includes('DS-160'));
+    return li ? li.querySelector('.ck-date').value : null;
+  });
+  check('prazos: datas semeadas por item (DS-160 → 2026-09-30)', nDatas >= 24 && dsDate === '2026-09-30', `n=${nDatas} ds=${dsDate}`);
+  await pP.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('disney2027-planner-v1'));
+    const i = s.checklist.findIndex(x => !x.ok);
+    s.checklist[i].d = '2026-01-01';
+    localStorage.setItem('disney2027-planner-v1', JSON.stringify(s));
+    localStorage.removeItem('disney2027-kd-alert');
+  });
+  await pP.reload({ waitUntil: 'load' });
+  await pP.waitForTimeout(900);
+  const toastAtraso = (await pP.locator('.toast').count()) ? await pP.textContent('.toast') : '';
+  check('prazos: alerta de item atrasado ao abrir', toastAtraso.includes('🚨 Em atraso'), toastAtraso.slice(0, 70));
+  await pP.click('#tabbtn-dash');
+  const primeiro = await pP.locator('#nextList li').first().textContent();
+  check('prazos: próximos passos ordenados por urgência (atrasado primeiro)', primeiro.includes('atrasado'), primeiro.slice(0, 80));
+  await ctxP.close();
 
   // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
