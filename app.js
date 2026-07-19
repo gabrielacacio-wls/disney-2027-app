@@ -1516,6 +1516,68 @@
     save(); renderParadas();
   });
 
+  // ---------- clima do dia ----------
+  // Open-Meteo (sem chave): previsão real até 16 dias; além disso, a média
+  // climática típica de Orlando no mês. Offline cai na média também.
+  var CLIMA_KEY = 'disney2027-clima-v1';
+  var CLIMA_MES = [[22, 10], [24, 12], [26, 14], [29, 16], [31, 19], [33, 22], [33, 23], [33, 23], [32, 22], [29, 19], [26, 15], [23, 12]];
+  var WMO = {
+    0: '☀️ céu limpo', 1: '🌤 quase limpo', 2: '⛅ parcialmente nublado', 3: '☁️ nublado',
+    45: '🌫 névoa', 48: '🌫 névoa', 51: '🌦 garoa', 53: '🌦 garoa', 55: '🌦 garoa',
+    61: '🌧 chuva fraca', 63: '🌧 chuva', 65: '🌧 chuva forte', 66: '🌧 chuva gelada', 67: '🌧 chuva gelada',
+    71: '🌨 neve', 73: '🌨 neve', 75: '🌨 neve', 80: '🌦 pancadas de chuva', 81: '🌦 pancadas de chuva',
+    82: '⛈ pancadas fortes', 95: '⛈ tempestade', 96: '⛈ tempestade', 99: '⛈ tempestade'
+  };
+  var climaCache = null, climaPendente = {};
+  try { climaCache = JSON.parse(localStorage.getItem(CLIMA_KEY) || 'null'); } catch (e) {}
+  if (!climaCache || typeof climaCache !== 'object') climaCache = {};
+  function getForecast(lat, lng, ok, fail) {
+    var key = iso(new Date()) + '|' + lat.toFixed(1) + ',' + lng.toFixed(1);
+    if (climaCache[key]) return ok(climaCache[key]);
+    if (climaPendente[key]) return;
+    climaPendente[key] = true;
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lng +
+      '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=America%2FNew_York&forecast_days=16')
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        climaPendente[key] = false;
+        if (!j || !j.daily || !j.daily.time) return fail();
+        if (Object.keys(climaCache).length > 6) climaCache = {};
+        climaCache[key] = j.daily;
+        try { localStorage.setItem(CLIMA_KEY, JSON.stringify(climaCache)); } catch (e) {}
+        ok(j.daily);
+      })
+      .catch(function () { climaPendente[key] = false; fail(); });
+  }
+  function renderDiaClima() {
+    var el = document.getElementById('diaClima');
+    var dia = diaSel;
+    var dt = pd(dia);
+    var hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    var diff = Math.round((dt - hoje) / 86400000);
+    var loc = null;
+    paradasDoDia(dia).some(function (st) { var p = place(st.k); if (p) { loc = p; return true; } return false; });
+    var lat = loc ? loc.lat : 28.42, lng = loc ? loc.lng : -81.47;
+    function media() {
+      if (diaSel !== dia) return;
+      var m = CLIMA_MES[dt.getMonth()];
+      el.textContent = '🌤 típico de ' + MESES[dt.getMonth()] + ' em Orlando: ' + m[0] + '° / ' + m[1] + '°' +
+        (dt.getMonth() >= 4 && dt.getMonth() <= 8 ? ' · pancada de chuva à tarde é comum — leve as capas!' : '');
+    }
+    if (diff >= 0 && diff <= 15) {
+      el.textContent = '🌡 carregando previsão…';
+      getForecast(lat, lng, function (f) {
+        if (diaSel !== dia) return;
+        var i = f.time.indexOf(dia);
+        if (i < 0) return media();
+        var chuva = f.precipitation_probability_max && f.precipitation_probability_max[i] != null
+          ? ' · 💧 ' + f.precipitation_probability_max[i] + '% de chuva' : '';
+        el.textContent = (WMO[f.weather_code[i]] || '🌤') + ' · ' + Math.round(f.temperature_2m_max[i]) + '° / ' +
+          Math.round(f.temperature_2m_min[i]) + '°' + chuva + (loc ? ' · em ' + loc.n.replace(/^\S+\s/, '') : '');
+      }, media);
+    } else media();
+  }
+
   // ---------- gastos da viagem ----------
   // Cada lançamento vira "real" na linha de custo correspondente (por
   // palavra-chave no nome da linha); sem correspondência, só entra nos totais.
@@ -1646,6 +1708,7 @@
     }
 
     renderParadas();
+    renderDiaClima();
     renderDiaGastos();
     document.getElementById('diaAlturas').textContent = 'José ' + S.alturas.jose + ' cm · Laura ' + S.alturas.laura + ' cm';
     var prox = days[i + 1];
