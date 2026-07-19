@@ -119,10 +119,34 @@
     ]
   };
 
+  // catálogo inicial de documentos/reservas, montado a partir das pessoas
+  function seedDocs(pessoas) {
+    var out = [];
+    pessoas.forEach(function (p) { out.push({ c: 'documento', t: 'Passaporte — ' + p.n, num: '', val: '', url: '' }); });
+    pessoas.forEach(function (p) { out.push({ c: 'documento', t: 'Visto EUA — ' + p.n, num: '', val: '', url: '' }); });
+    out.push(
+      { c: 'documento', t: 'Certidões de nascimento — Laura e José (cópias)', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Voos Azul em pontos (4) — localizador', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Voos avós + Marília — localizador', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Hotel Celebration Suites — confirmação', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Minivan — confirmação', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Restaurantes (dia -60) — confirmações', num: '', val: '', url: '' },
+      { c: 'ingresso', t: 'Ingressos Disney (8 dias + Lightning Lane)', num: '', val: '', url: '' },
+      { c: 'ingresso', t: 'Universal 3 dias', num: '', val: '', url: '' },
+      { c: 'ingresso', t: 'LEGOLAND + Peppa Pig Park', num: '', val: '', url: '' },
+      { c: 'seguro', t: 'Bilhetes AIG/MasterAssist (4 do Skyline)', num: '', val: '', url: '' },
+      { c: 'seguro', t: 'Seguro do cartão — avós e Marília', num: '', val: '', url: '' }
+    );
+    return out;
+  }
   function load() {
     try {
       var raw = localStorage.getItem(KEY);
-      if (!raw) return JSON.parse(JSON.stringify(DEF));
+      if (!raw) {
+        var d0 = JSON.parse(JSON.stringify(DEF));
+        d0.docs = seedDocs(d0.pessoas);
+        return d0;
+      }
       var s = JSON.parse(raw);
       if (!s.custos || !s.checklist || !s.roteiro) return JSON.parse(JSON.stringify(DEF));
       if (!s.pessoas) s.pessoas = JSON.parse(JSON.stringify(DEF.pessoas));
@@ -182,8 +206,13 @@
       if (!s.diaCheck) s.diaCheck = {};
       if (!s.gastos) s.gastos = [];
       if (!s.paradas) s.paradas = {};
+      if (!s.docs) s.docs = seedDocs(s.pessoas);
       return s;
-    } catch (e) { return JSON.parse(JSON.stringify(DEF)); }
+    } catch (e) {
+      var dErr = JSON.parse(JSON.stringify(DEF));
+      dErr.docs = seedDocs(dErr.pessoas);
+      return dErr;
+    }
   }
   var S = load();
   var saveTimer = null;
@@ -944,6 +973,98 @@
   document.getElementById('altLaura').value = S.alturas.laura;
   document.getElementById('altJose').addEventListener('input', function () { S.alturas.jose = +this.value || 0; save(); renderAlturas(); });
   document.getElementById('altLaura').addEventListener('input', function () { S.alturas.laura = +this.value || 0; save(); renderAlturas(); });
+
+  // ---------- documentos & reservas ----------
+  var DOC_CATS = { documento: '🛂 Documentos pessoais', reserva: '🏨 Reservas', ingresso: '🎟 Ingressos', seguro: '🛡 Seguros' };
+  function docUrl(u) {
+    u = (u || '').trim();
+    if (!u) return '';
+    return /^https?:\/\//i.test(u) ? u : 'https://' + u;
+  }
+  function renderDocs() {
+    var box = document.getElementById('docsGroups'); box.innerHTML = '';
+    var limite = addDays(pd(S.fim), 30);
+    var okTotal = 0;
+    Object.keys(DOC_CATS).forEach(function (cat) {
+      var itens = S.docs.filter(function (d) { return d.c === cat; });
+      if (!itens.length) return;
+      var g = document.createElement('div'); g.className = 'docs-group';
+      var head = document.createElement('div'); head.className = 'ph-head';
+      var h3 = document.createElement('h3'); h3.textContent = DOC_CATS[cat]; h3.style.margin = '0';
+      var okCat = itens.filter(function (d) { return d.num || d.url; }).length;
+      okTotal += okCat;
+      var pct = document.createElement('span'); pct.className = 'pct'; pct.textContent = okCat + '/' + itens.length;
+      head.appendChild(h3); head.appendChild(pct); g.appendChild(head);
+      var list = document.createElement('div'); list.className = 'list';
+      itens.forEach(function (d) {
+        var row = document.createElement('div'); row.className = 'doc-row';
+        var hd = document.createElement('div'); hd.className = 'doc-head';
+        var dot = document.createElement('span'); dot.className = 'st-dot';
+        dot.textContent = (d.num || d.url) ? '✅' : '⏳';
+        dot.title = (d.num || d.url) ? 'Preenchido' : 'Pendente';
+        var tt = document.createElement('input'); tt.className = 'tt'; tt.type = 'text'; tt.value = d.t;
+        tt.setAttribute('aria-label', 'Nome do documento');
+        tt.addEventListener('input', function () { d.t = tt.value; save(); });
+        hd.appendChild(dot); hd.appendChild(tt);
+        if (d.val && pd(d.val) < limite) {
+          var w = document.createElement('span'); w.className = 'doc-warn';
+          w.textContent = '⚠ vence perto da viagem';
+          hd.appendChild(w);
+        }
+        if (d.url) {
+          var ab = document.createElement('a'); ab.className = 'abre'; ab.textContent = '🔗';
+          ab.title = 'Abrir arquivo'; ab.href = docUrl(d.url); ab.target = '_blank'; ab.rel = 'noopener';
+          hd.appendChild(ab);
+        }
+        var del = document.createElement('button'); del.className = 'del'; del.textContent = '✕';
+        del.setAttribute('aria-label', 'Remover ' + d.t);
+        del.addEventListener('click', function () {
+          var i = S.docs.indexOf(d);
+          if (i < 0) return;
+          S.docs.splice(i, 1); save(); renderDocs();
+          showUndo('"' + d.t + '" removido', function () {
+            S.docs.splice(Math.min(i, S.docs.length), 0, d);
+            save(); renderDocs();
+          });
+        });
+        hd.appendChild(del);
+        var fields = document.createElement('div'); fields.className = 'doc-fields';
+        var num = document.createElement('input'); num.type = 'text'; num.value = d.num || ''; num.placeholder = 'número / localizador';
+        num.setAttribute('aria-label', 'Número ou localizador de ' + d.t);
+        num.autocomplete = 'off';
+        num.addEventListener('input', function () { d.num = num.value; save(); });
+        num.addEventListener('change', function () { renderDocs(); });
+        var val = document.createElement('input'); val.type = 'date'; val.value = d.val || '';
+        val.title = 'Validade / data';
+        val.setAttribute('aria-label', 'Validade de ' + d.t);
+        val.addEventListener('change', function () { d.val = val.value; save(); renderDocs(); });
+        var url = document.createElement('input'); url.type = 'text'; url.value = d.url || ''; url.placeholder = 'link do arquivo (Drive/iCloud)…';
+        url.setAttribute('aria-label', 'Link do arquivo de ' + d.t);
+        url.autocomplete = 'off';
+        url.addEventListener('input', function () { d.url = url.value.trim(); save(); });
+        url.addEventListener('change', function () { renderDocs(); });
+        fields.appendChild(num); fields.appendChild(val); fields.appendChild(url);
+        row.appendChild(hd); row.appendChild(fields);
+        list.appendChild(row);
+      });
+      g.appendChild(list); box.appendChild(g);
+    });
+    document.getElementById('docsResumo').textContent = okTotal + ' de ' + S.docs.length + ' com número ou arquivo';
+  }
+  (function () {
+    var sel = document.getElementById('docNovoCat');
+    Object.keys(DOC_CATS).forEach(function (c) {
+      var o = document.createElement('option'); o.value = c; o.textContent = DOC_CATS[c]; sel.appendChild(o);
+    });
+    document.getElementById('addDoc').addEventListener('click', function () {
+      S.docs.push({ c: sel.value, t: 'Novo item — toque para renomear', num: '', val: '', url: '' });
+      save(); renderDocs();
+    });
+  })();
+  document.getElementById('diaVerDocs').addEventListener('click', function () {
+    setTab('check');
+    document.getElementById('docsCard').scrollIntoView({ behavior: 'smooth' });
+  });
 
   // ---------- malas ----------
   function mlist() {
@@ -1802,7 +1923,7 @@
     try { localStorage.setItem(KD_ALERT_KEY, hojeIso); } catch (e) {}
   }
 
-  function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderCofre(); renderDia(); tickCountdown(); }
+  function renderAll() { renderHeader(); renderDash(); renderCustos(); renderCal(); renderRoteiro(); renderShop(); renderCheck(); renderAlturas(); renderMalas(); renderDocs(); renderCofre(); renderDia(); tickCountdown(); }
   renderAll();
   restoreTab();
   maybeBackupBanner();

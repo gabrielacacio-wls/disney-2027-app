@@ -411,6 +411,46 @@ const { chromium } = require('playwright');
   check('clima: previsão real com Open-Meteo (32°/22°, 55% chuva)', climaReal.includes('32°') && climaReal.includes('55%'), climaReal.slice(0, 80));
   await ctxC.close();
 
+  // 21d. documentos & reservas
+  const ctxD = await browser.newContext();
+  const pD = await ctxD.newPage();
+  await pD.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pD.waitForTimeout(700);
+  await pD.click('#tabbtn-check');
+  const docsTitulos = await pD.$$eval('#docsGroups input.tt', els => els.map(e => e.value).join('|'));
+  const docsResumo0 = await pD.textContent('#docsResumo');
+  check('docs: catálogo semeado por pessoa e categoria', docsTitulos.includes('Passaporte — Marília') && docsTitulos.includes('Hotel Celebration Suites') && docsResumo0.includes('0 de 25'), docsResumo0);
+  // preencher número marca como ok
+  const num1 = pD.locator('.doc-row').first().locator('.doc-fields input').first();
+  await num1.fill('FD123456');
+  await num1.press('Tab');
+  await pD.waitForTimeout(300);
+  const dot1 = await pD.locator('.doc-row').first().locator('.st-dot').textContent();
+  const docsResumo1 = await pD.textContent('#docsResumo');
+  check('docs: número preenchido marca ✅', dot1 === '✅' && docsResumo1.includes('1 de 25'), `${dot1} ${docsResumo1}`);
+  // validade antes do fim da viagem gera alerta
+  await pD.locator('.doc-row').first().locator('input[type=date]').fill('2027-05-01');
+  await pD.waitForTimeout(300);
+  const warn = await pD.locator('.doc-row').first().locator('.doc-warn').count();
+  check('docs: validade perto da viagem gera alerta', warn === 1);
+  // link do arquivo vira botão 🔗
+  const url1 = pD.locator('.doc-row').first().locator('.doc-fields input').nth(2);
+  await url1.fill('drive.google.com/file/d/abc123');
+  await url1.press('Tab');
+  await pD.waitForTimeout(300);
+  const href = await pD.locator('.doc-row').first().locator('a.abre').getAttribute('href');
+  check('docs: link abre o arquivo com https', href === 'https://drive.google.com/file/d/abc123', href);
+  // persiste e o atalho da emergência leva ao card
+  await pD.reload({ waitUntil: 'load' });
+  await pD.waitForTimeout(700);
+  await pD.click('#tabbtn-hoje');
+  await pD.click('#diaVerDocs');
+  await pD.waitForTimeout(400);
+  const checkOn = await pD.evaluate(() => document.getElementById('tab-check').classList.contains('on'));
+  const persist = await pD.textContent('#docsResumo');
+  check('docs: persiste e atalho da emergência funciona', checkOn && persist.includes('1 de 25'), `on=${checkOn} ${persist}`);
+  await ctxD.close();
+
   // 22. reset persiste após reload (gravação síncrona antes do reload)
   const ctx4 = await browser.newContext();
   const p5 = await ctx4.newPage();

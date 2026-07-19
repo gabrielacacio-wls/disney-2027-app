@@ -4,6 +4,7 @@ Plataforma interativa de planejamento de viagem. Abra: https://gabrielacacio-wls
 
 - Funciona offline e pode ser instalada na tela inicial (PWA).
 - **Membros da viagem editáveis** (card Documentos da família): renomeie, adicione ou remova pessoas — médias por pessoa, rateios e listas recalculam na hora.
+- **Documentos & reservas** (aba Checklist): números de passaporte/visto, localizadores e validades organizados por categoria, com alerta de vencimento perto da viagem e link de um toque para o arquivo no Drive/iCloud. Atalho no card de emergência da aba Hoje.
 - **Modo dia de parque** (aba Hoje): durante a viagem o app abre direto no dia atual, com lembretes contextuais do parque (Rider Switch/Child Swap), mochila do dia, alturas das crianças e telefone de emergência do seguro. Antes da viagem funciona como prévia navegável do roteiro.
 - **Mapa do dia** (aba Hoje): paradas com horário e notas, pinos numerados num mapa Leaflet/OpenStreetMap (auto-hospedado), distâncias entre paradas e botão 🧭 que abre o GPS. Sem paradas manuais, o app sugere os lugares a partir do texto do roteiro.
 - **Clima do dia** (aba Hoje): previsão real (Open-Meteo, sem chave) para dias a até 16 dias, seguindo a localização da primeira parada; datas distantes mostram a média típica do mês em Orlando.
