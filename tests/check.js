@@ -427,6 +427,7 @@ const { chromium } = require('playwright');
   const docsTitulos = await pD.$$eval('#docsGroups input.tt', els => els.map(e => e.value).join('|'));
   const docsResumo0 = await pD.textContent('#docsResumo');
   check('docs: catálogo semeado por pessoa e categoria', docsTitulos.includes('Passaporte — Marília') && docsTitulos.includes('Hotel Celebration Suites') && docsResumo0.includes('0 de 25'), docsResumo0);
+  check('docs: endereço do hotel registrado', docsTitulos.includes('5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746'), '');
   // preencher número marca como ok
   const num1 = pD.locator('.doc-row').first().locator('.doc-fields input').first();
   await num1.fill('FD123456');

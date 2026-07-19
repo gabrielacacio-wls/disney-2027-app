@@ -172,7 +172,7 @@
       { c: 'documento', t: 'Certidões de nascimento — Laura e José (cópias)', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Voos Azul em pontos (4) — localizador', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Voos avós + Marília — localizador', num: '', val: '', url: '' },
-      { c: 'reserva', t: 'Hotel Celebration Suites — confirmação', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Hotel Celebration Suites — 5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Minivan — confirmação', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Restaurantes (dia -60) — confirmações', num: '', val: '', url: '' },
       { c: 'ingresso', t: 'Ingressos Disney (8 dias + Lightning Lane)', num: '', val: '', url: '' },
@@ -252,6 +252,12 @@
       if (!s.gastos) s.gastos = [];
       if (!s.paradas) s.paradas = {};
       if (!s.docs) s.docs = seedDocs(s.pessoas);
+      // endereço do hotel registrado no item de reserva (para quem já tinha docs)
+      s.docs.forEach(function (d) {
+        if (/Hotel Celebration Suites/.test(d.t) && d.t.indexOf('5820') < 0) {
+          d.t = 'Hotel Celebration Suites — 5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746';
+        }
+      });
       ensureCheckDates(s);
       return s;
     } catch (e) {
