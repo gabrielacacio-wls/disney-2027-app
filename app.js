@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   var KEY = 'disney2027-planner-v1';
   var THEME_KEY = 'disney2027-theme';
   var TAB_KEY = 'disney2027-tab';
@@ -20,7 +20,7 @@
       { n: 'Compras pessoais (US$ 1.000 × 7)', v: 7000 }
     ],
     flags: { compras1000: true, marilia: true, voosCartao: true },
-    alturas: { jose: 86, laura: 108 },
+    alturas: { jose: 86, laura: 113 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
     gastos: [],
@@ -245,7 +245,7 @@
         }
         s.flags.voosCartao = true;
       }
-      if (!s.alturas) s.alturas = { jose: 86, laura: 108 };
+      if (!s.alturas) s.alturas = { jose: 86, laura: 113 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
       if (!s.malas) s.malas = JSON.parse(JSON.stringify(DEF.malas));
       if (!s.diaCheck) s.diaCheck = {};
