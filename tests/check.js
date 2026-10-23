@@ -235,20 +235,18 @@ const { chromium } = require('playwright');
   check('dia de parque: prévia mostra o 1º dia', aviso && dia1.includes('Voo VCP'), dia1.slice(0, 50));
   const climaMedia = await p6.textContent('#diaClima');
   check('clima: média típica para datas distantes', climaMedia.includes('típico de abril'), climaMedia.slice(0, 60));
-  await p6.click('#diaNext');
-  await p6.click('#diaNext');
-  await p6.click('#diaNext'); // dia 4 = Magic Kingdom
-  const dia4 = await p6.textContent('#diaDesc');
+  for (let k = 0; k < 4; k++) await p6.click('#diaNext'); // dia 5 = Magic Kingdom
+  const dia5 = await p6.textContent('#diaDesc');
   const lembretes = await p6.textContent('#diaLembretes');
   const mochilaVis = await p6.locator('#diaMochilaCard').isVisible();
-  check('dia de parque: dia Disney mostra Rider Switch e mochila', dia4.includes('Magic Kingdom') && lembretes.includes('Rider Switch') && mochilaVis, dia4.slice(0, 40));
+  check('dia de parque: dia Disney mostra Rider Switch e mochila', dia5.includes('Magic Kingdom') && lembretes.includes('Rider Switch') && mochilaVis, dia5.slice(0, 40));
   // mochila do dia persiste por data
   await p6.locator('#diaMochila input').first().check();
   await p6.waitForTimeout(500);
   await p6.reload({ waitUntil: 'load' });
   await p6.waitForTimeout(700);
   await p6.click('#tabbtn-hoje');
-  for (let k = 0; k < 3; k++) await p6.click('#diaNext');
+  for (let k = 0; k < 4; k++) await p6.click('#diaNext');
   const mochilaMarcada = await p6.locator('#diaMochila input').first().isChecked();
   check('dia de parque: mochila do dia persiste por data', mochilaMarcada);
   await ctxDia.close();
@@ -315,7 +313,7 @@ const { chromium } = require('playwright');
   check('família: Marília no grupo e no cabeçalho', nomes.includes('Marília') && famHdr.includes('Marília'), nomes.join(','));
   const lbl7 = await p9.textContent('#stPPLbl');
   const pp7 = await p9.textContent('#stPP');
-  check('família: média recalculada para 7 pessoas', lbl7.includes('(7)') && pp7.includes('3.279'), `${lbl7} ${pp7}`);
+  check('família: média recalculada para 7 pessoas', lbl7.includes('(7)') && pp7.includes('3.363'), `${lbl7} ${pp7}`);
   const checklistTxt = await p9.textContent('#phases');
   check('família: checklist cobre passaporte e visto da Marília', checklistTxt.includes('Passaporte da Marília') && checklistTxt.includes('Regina, Dario, Marília e José'));
   check('família: checklist tem passagens no cartão dos avós/Marília', checklistTxt.includes('comprar as passagens no cartão deles') && checklistTxt.includes('Emitir as 4 passagens'));
@@ -324,7 +322,7 @@ const { chromium } = require('playwright');
   const lbl8 = await p9.textContent('#stPPLbl');
   const pp8 = await p9.textContent('#stPP');
   const cards8 = await p9.locator('#shopBudgets .sb-card').count();
-  check('família: adicionar pessoa recalcula (÷8)', lbl8.includes('(8)') && pp8.includes('2.869') && cards8 === 8, `${lbl8} ${pp8} cards=${cards8}`);
+  check('família: adicionar pessoa recalcula (÷8)', lbl8.includes('(8)') && pp8.includes('2.943') && cards8 === 8, `${lbl8} ${pp8} cards=${cards8}`);
   await p9.locator('#pesGrid .pes .del').last().click();
   await p9.waitForTimeout(300);
   const lblBack = await p9.textContent('#stPPLbl');
@@ -346,8 +344,8 @@ const { chromium } = require('playwright');
   const pins1 = await pM.locator('#mapa .pin-num').count();
   const rows1 = await pM.locator('.parada-row').count();
   check('mapa: paradas inferidas do roteiro do dia 1', pins1 >= 2 && rows1 >= 2, `pins=${pins1} rows=${rows1}`);
-  // dia 4 = Magic Kingdom
-  for (let k = 0; k < 3; k++) await pM.click('#diaNext');
+  // dia 5 = Magic Kingdom
+  for (let k = 0; k < 4; k++) await pM.click('#diaNext');
   await pM.waitForTimeout(300);
   const mk = await pM.locator('.parada-row select').first().inputValue();
   check('mapa: dia de Magic Kingdom aponta para o parque', mk === 'magic', mk);
@@ -364,7 +362,7 @@ const { chromium } = require('playwright');
   await pM.reload({ waitUntil: 'load' });
   await pM.waitForTimeout(700);
   await pM.click('#tabbtn-hoje');
-  for (let k = 0; k < 3; k++) await pM.click('#diaNext');
+  for (let k = 0; k < 4; k++) await pM.click('#diaNext');
   await pM.waitForTimeout(300);
   const rows3 = await pM.locator('.parada-row').count();
   check('mapa: paradas persistem após reload', rows3 === 2, String(rows3));
@@ -487,7 +485,7 @@ const { chromium } = require('playwright');
   await pQ.waitForTimeout(300);
   const filasDia1 = await pQ.locator('#filasCard').isHidden();
   check('filas: card oculto em dia sem parque', filasDia1);
-  for (let k = 0; k < 3; k++) await pQ.click('#diaNext'); // dia 4: Magic Kingdom
+  for (let k = 0; k < 4; k++) await pQ.click('#diaNext'); // dia 5: Magic Kingdom
   await pQ.waitForTimeout(800);
   const filasTxt = await pQ.textContent('#filasList');
   const filasInfo = await pQ.textContent('#filasInfo');

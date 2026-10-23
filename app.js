@@ -8,7 +8,7 @@
   function nomesPessoas() { return S.pessoas.map(function (p) { return p.n; }); }
 
   var DEF = {
-    inicio: '2027-04-23', fim: '2027-05-11', cambio: 5.5,
+    inicio: '2027-04-22', fim: '2027-05-11', cambio: 5.5,
     custos: [
       { n: 'Ingressos Disney (8 dias + Lightning Lane)', v: 4700 },
       { n: 'Hospedagem — Celebration Suites 2BR/2BA', v: 3400 },
@@ -16,10 +16,11 @@
       { n: 'Universal (3 dias) + LEGOLAND/Peppa', v: 2650 },
       { n: 'Carro (minivan) + gasolina + estacionamento', v: 1500 },
       { n: 'Voos — taxas de embarque (4 em pontos)', v: 370 },
+      { n: 'Voos — assentos Economy Xtra (R$ 3.000)', v: 594 },
       { n: 'Seguro viagem (plano B)', v: 330 },
       { n: 'Compras pessoais (US$ 1.000 × 7)', v: 7000 }
     ],
-    flags: { compras1000: true, marilia: true, voosCartao: true },
+    flags: { compras1000: true, marilia: true, voosCartao: true, voosEmitidos: true, ida2204: true },
     alturas: { jose: 86, laura: 113 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
@@ -62,7 +63,8 @@
       { t: 'Chocolates e guloseimas (Walmart)', p: 'Família', v: 150, ok: false }
     ],
     roteiro: {
-      '2027-04-23': { t: 'viagem', d: 'Voo VCP → MCO (Azul), carro, check-in Celebration Suites, mercado' },
+      '2027-04-22': { t: 'viagem', d: 'Voo VCP → MCO (Azul AD 8706, 09:45 → 18:00), carro, check-in Celebration Suites' },
+      '2027-04-23': { t: 'descanso', d: 'Mercado no Walmart de manhã; piscina e descanso da viagem' },
       '2027-04-24': { t: 'descanso', d: 'Piscina e adaptação ao fuso; Disney Springs à noite' },
       '2027-04-25': { t: 'compras', d: 'Vineland Outlets de manhã + piscina' },
       '2027-04-26': { t: 'parque', d: 'Magic Kingdom #1 — Fantasyland; fogos Happily Ever After' },
@@ -102,7 +104,8 @@
       { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina, Dario e Marília juntos', ok: false },
       { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
       { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
-      { f: 'Ago–nov/2026', t: 'Emitir as 4 passagens com pontos — Gabriel, Débora, Laura e José (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)', ok: false },
+      { f: 'Ago–nov/2026', t: 'Ida dos 4 emitida: Azul AD 8706, 22/04 09:45 (assentos Economy Xtra) ✓', ok: true },
+      { f: 'Ago–nov/2026', t: 'Emitir as 4 passagens da volta (MCO → VCP, 11/05): 3 em pontos + cortesia Skyline na reserva do Gabriel — alvo ≤125 mil/pessoa (saldo 376 mil); Azul Friday 13/11', ok: false },
       { f: 'Ago–nov/2026', t: 'Regina, Dario e Marília: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Vistos dos 4 em mãos ✓', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
@@ -170,7 +173,7 @@
     pessoas.forEach(function (p) { out.push({ c: 'documento', t: 'Visto EUA — ' + p.n, num: '', val: '', url: '' }); });
     out.push(
       { c: 'documento', t: 'Certidões de nascimento — Laura e José (cópias)', num: '', val: '', url: '' },
-      { c: 'reserva', t: 'Voos Azul em pontos (4) — localizador', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Voos Azul em pontos (4) — ida AD 8706, 22/04 09:45', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Voos avós + Marília — localizador', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Hotel Celebration Suites — 5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Minivan — confirmação', num: '', val: '', url: '' },
@@ -244,6 +247,33 @@
           }
         }
         s.flags.voosCartao = true;
+      }
+      // Ida dos 4 emitida (out/2026), com assentos Economy Xtra marcados; a volta segue pendente
+      if (!s.flags.voosEmitidos) {
+        for (var ei = 0; ei < s.checklist.length; ei++) {
+          if (/Emitir as 4 passagens/.test(s.checklist[ei].t)) {
+            s.checklist.splice(ei, 0, { f: s.checklist[ei].f, t: 'Ida dos 4 emitida: Azul AD 8706, 22/04 09:45 (assentos Economy Xtra) ✓', ok: true, d: s.checklist[ei].d || '' });
+            break;
+          }
+        }
+        s.checklist.forEach(function (i) {
+          if (i.t === 'Emitir as 4 passagens com pontos — Gabriel, Débora, Laura e José (alvo ≤80 mil/trecho c/ cupom; janelas: Semana do Cliente e Azul Friday; taxas no Skyline)') i.t = 'Emitir as 4 passagens da volta (MCO → VCP, 11/05): 3 em pontos + cortesia Skyline na reserva do Gabriel — alvo ≤125 mil/pessoa (saldo 376 mil); Azul Friday 13/11';
+        });
+        s.custos.push({ n: 'Voos — assentos Economy Xtra (R$ 3.000)', v: 594 });
+        s.flags.voosEmitidos = true;
+      }
+      // Ida emitida para 22/04 (AD 8706): viagem começa um dia antes
+      if (!s.flags.ida2204) {
+        if (s.inicio === '2027-04-23') s.inicio = '2027-04-22';
+        if (!s.roteiro['2027-04-22']) s.roteiro['2027-04-22'] = { t: 'viagem', d: 'Voo VCP → MCO (Azul AD 8706, 09:45 → 18:00), carro, check-in Celebration Suites' };
+        var r23 = s.roteiro['2027-04-23'];
+        if (r23 && r23.d === 'Voo VCP → MCO (Azul), carro, check-in Celebration Suites, mercado') {
+          s.roteiro['2027-04-23'] = { t: 'descanso', d: 'Mercado no Walmart de manhã; piscina e descanso da viagem' };
+        }
+        if (s.docs) s.docs.forEach(function (d) {
+          if (d.t === 'Voos Azul em pontos (4) — localizador') d.t = 'Voos Azul em pontos (4) — ida AD 8706, 22/04 09:45';
+        });
+        s.flags.ida2204 = true;
       }
       if (!s.alturas) s.alturas = { jose: 86, laura: 113 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
