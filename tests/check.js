@@ -116,6 +116,8 @@ const { chromium } = require('playwright');
 
   // 12. hover no donut destaca fatia
   await page.click('#tabbtn-custos');
+  // centraliza a legenda: no rodapé ela fica sob os toasts fixos (atraso, link copiado)
+  await page.locator('#legend').evaluate(el => el.scrollIntoView({ block: 'center' }));
   await page.locator('#legend .row').first().hover();
   const dimmed = await page.evaluate(() => document.querySelectorAll('#donut circle.dim').length);
   check('hover na legenda destaca fatia', dimmed > 0, dimmed + ' dimmed');
@@ -316,7 +318,7 @@ const { chromium } = require('playwright');
   check('família: média por pessoa com 6', lbl7.includes('(6)') && pp7.includes('3.726'), `${lbl7} ${pp7}`);
   const checklistTxt = await p9.textContent('#phases');
   check('família: checklist de vistos sem a Marília', !checklistTxt.includes('Marília') && checklistTxt.includes('Regina, Dario e José'));
-  check('família: checklist tem passagens no cartão dos avós', checklistTxt.includes('comprar as passagens no cartão deles') && checklistTxt.includes('Emitir as 4 passagens'));
+  check('família: checklist tem passagens dos avós no Skyline', checklistTxt.includes('Passagens de Regina e Dario: emitir no Skyline') && checklistTxt.includes('Emitir as 4 passagens'));
   await p9.click('#addPessoa');
   await p9.waitForTimeout(300);
   const lbl8 = await p9.textContent('#stPPLbl');
