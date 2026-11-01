@@ -303,32 +303,59 @@ const { chromium } = require('playwright');
   check('gastos: persistem após reload', persistiu.includes('almoço'), '');
   await ctxG.close();
 
-  // 20. família editável: Marília incluída, valores por 7, adicionar/remover pessoa
+  // 20. família editável: 6 pessoas (Marília não vai), adicionar/remover pessoa
   const ctxF = await browser.newContext();
   const p9 = await ctxF.newPage();
   await p9.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
   await p9.waitForTimeout(700);
   const nomes = await p9.$$eval('#pesGrid input.nm', els => els.map(e => e.value));
   const famHdr = await p9.textContent('#famNames');
-  check('família: Marília no grupo e no cabeçalho', nomes.includes('Marília') && famHdr.includes('Marília'), nomes.join(','));
+  check('família: 6 pessoas, sem a Marília', nomes.length === 6 && !nomes.includes('Marília') && !famHdr.includes('Marília'), nomes.join(','));
   const lbl7 = await p9.textContent('#stPPLbl');
   const pp7 = await p9.textContent('#stPP');
-  check('família: média recalculada para 7 pessoas', lbl7.includes('(7)') && pp7.includes('3.363'), `${lbl7} ${pp7}`);
+  check('família: média por pessoa com 6', lbl7.includes('(6)') && pp7.includes('3.757'), `${lbl7} ${pp7}`);
   const checklistTxt = await p9.textContent('#phases');
-  check('família: checklist cobre passaporte e visto da Marília', checklistTxt.includes('Passaporte da Marília') && checklistTxt.includes('Regina, Dario, Marília e José'));
-  check('família: checklist tem passagens no cartão dos avós/Marília', checklistTxt.includes('comprar as passagens no cartão deles') && checklistTxt.includes('Emitir as 4 passagens'));
+  check('família: checklist de vistos sem a Marília', !checklistTxt.includes('Marília') && checklistTxt.includes('Regina, Dario e José'));
+  check('família: checklist tem passagens no cartão dos avós', checklistTxt.includes('comprar as passagens no cartão deles') && checklistTxt.includes('Emitir as 4 passagens'));
   await p9.click('#addPessoa');
   await p9.waitForTimeout(300);
   const lbl8 = await p9.textContent('#stPPLbl');
   const pp8 = await p9.textContent('#stPP');
   const cards8 = await p9.locator('#shopBudgets .sb-card').count();
-  check('família: adicionar pessoa recalcula (÷8)', lbl8.includes('(8)') && pp8.includes('2.943') && cards8 === 8, `${lbl8} ${pp8} cards=${cards8}`);
+  check('família: adicionar pessoa recalcula (÷7)', lbl8.includes('(7)') && pp8.includes('3.221') && cards8 === 7, `${lbl8} ${pp8} cards=${cards8}`);
   await p9.locator('#pesGrid .pes .del').last().click();
   await p9.waitForTimeout(300);
   const lblBack = await p9.textContent('#stPPLbl');
   const undoVis = await p9.locator('.toast').isVisible();
-  check('família: remover pessoa recalcula e oferece desfazer', lblBack.includes('(7)') && undoVis, lblBack);
+  check('família: remover pessoa recalcula e oferece desfazer', lblBack.includes('(6)') && undoVis, lblBack);
   await ctxF.close();
+
+  // 20b. migração: quem salvou o plano com a Marília volta a 6 pessoas
+  const ctxMg = await browser.newContext();
+  const pMg = await ctxMg.newPage();
+  await pMg.goto('http://127.0.0.1:8123/', { waitUntil: 'load' });
+  await pMg.waitForTimeout(600);
+  await pMg.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('disney2027-planner-v1'));
+    s.pessoas.push({ n: 'Marília', r: 'irmã da Débora', s: 'pend' });
+    s.custos.forEach(c => { if (c.v === 6000) { c.n = 'Compras pessoais (US$ 1.000 × 7)'; c.v = 7000; } });
+    s.checklist.forEach(i => { i.t = i.t.replace('para Regina, Dario e José', 'para Regina, Dario, Marília e José').replace('Vistos dos 3', 'Vistos dos 4'); });
+    s.checklist.unshift({ f: 'Agora (jul–ago/2026)', t: 'Passaporte da Marília: conferir validade (além de mai/2027) ou emitir na PF', ok: false });
+    s.compras.push({ t: 'Presente da Marília', p: 'Marília', v: 80, ok: false });
+    s.docs.push({ c: 'documento', t: 'Passaporte — Marília', num: '', val: '', url: '' });
+    delete s.flags.semMarilia;
+    localStorage.setItem('disney2027-planner-v1', JSON.stringify(s));
+  });
+  await pMg.reload({ waitUntil: 'load' });
+  await pMg.waitForTimeout(800);
+  const mig = await pMg.evaluate(() => JSON.parse(localStorage.getItem('disney2027-planner-v1')));
+  const migTxt = JSON.stringify(mig.pessoas) + JSON.stringify(mig.checklist) + JSON.stringify(mig.docs);
+  const migCompras = mig.custos.find(c => /Compras pessoais/.test(c.n));
+  const migPresente = mig.compras.find(c => c.t === 'Presente da Marília');
+  check('migração: Marília removida de pessoas, checklist e documentos', !migTxt.includes('Marília') && mig.pessoas.length === 6, mig.pessoas.map(p => p.n).join(','));
+  check('migração: compras voltam a US$ 6.000 e item dela vai para Família', migCompras.v === 6000 && migPresente && migPresente.p === 'Família', migCompras.n);
+  check('migração: média volta a ÷6', (await pMg.textContent('#stPPLbl')).includes('(6)'));
+  await ctxMg.close();
 
   // 21. paradas do dia + mapa (tiles do OSM bloqueados para o teste ficar offline)
   const ctxM = await browser.newContext();
@@ -424,7 +451,7 @@ const { chromium } = require('playwright');
   await pD.click('#tabbtn-check');
   const docsTitulos = await pD.$$eval('#docsGroups input.tt', els => els.map(e => e.value).join('|'));
   const docsResumo0 = await pD.textContent('#docsResumo');
-  check('docs: catálogo semeado por pessoa e categoria', docsTitulos.includes('Passaporte — Marília') && docsTitulos.includes('Hotel Celebration Suites') && docsResumo0.includes('0 de 25'), docsResumo0);
+  check('docs: catálogo semeado por pessoa e categoria', docsTitulos.includes('Passaporte — José') && !docsTitulos.includes('Marília') && docsTitulos.includes('Hotel Celebration Suites') && docsResumo0.includes('0 de 23'), docsResumo0);
   check('docs: endereço do hotel registrado', docsTitulos.includes('5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746'), '');
   // preencher número marca como ok
   const num1 = pD.locator('.doc-row').first().locator('.doc-fields input').first();
@@ -433,7 +460,7 @@ const { chromium } = require('playwright');
   await pD.waitForTimeout(300);
   const dot1 = await pD.locator('.doc-row').first().locator('.st-dot').textContent();
   const docsResumo1 = await pD.textContent('#docsResumo');
-  check('docs: número preenchido marca ✅', dot1 === '✅' && docsResumo1.includes('1 de 25'), `${dot1} ${docsResumo1}`);
+  check('docs: número preenchido marca ✅', dot1 === '✅' && docsResumo1.includes('1 de 23'), `${dot1} ${docsResumo1}`);
   // validade antes do fim da viagem gera alerta
   await pD.locator('.doc-row').first().locator('input[type=date]').fill('2027-05-01');
   await pD.waitForTimeout(300);
@@ -454,7 +481,7 @@ const { chromium } = require('playwright');
   await pD.waitForTimeout(400);
   const checkOn = await pD.evaluate(() => document.getElementById('tab-check').classList.contains('on'));
   const persist = await pD.textContent('#docsResumo');
-  check('docs: persiste e atalho da emergência funciona', checkOn && persist.includes('1 de 25'), `on=${checkOn} ${persist}`);
+  check('docs: persiste e atalho da emergência funciona', checkOn && persist.includes('1 de 23'), `on=${checkOn} ${persist}`);
   await ctxD.close();
 
   // 21e. filas ao vivo (Queue-Times mockada) + compartilhar o dia
