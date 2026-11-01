@@ -18,9 +18,9 @@
       { n: 'Voos — taxas de embarque (4 em pontos)', v: 370 },
       { n: 'Voos — assentos Economy Xtra (R$ 3.000)', v: 594 },
       { n: 'Seguro viagem (plano B)', v: 330 },
-      { n: 'Compras pessoais (US$ 1.000 × 7)', v: 7000 }
+      { n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }
     ],
-    flags: { compras1000: true, marilia: true, voosCartao: true, voosEmitidos: true, ida2204: true },
+    flags: { compras1000: true, marilia: true, voosCartao: true, voosEmitidos: true, ida2204: true, semMarilia: true },
     alturas: { jose: 86, laura: 113 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
@@ -90,31 +90,29 @@
       { n: 'Laura', r: 'visto válido', s: 'ok' },
       { n: 'Regina', r: 'renovação de visto', s: 'pend' },
       { n: 'Dario', r: 'renovação de visto', s: 'pend' },
-      { n: 'José', r: 'passaporte + 1º visto', s: 'pend' },
-      { n: 'Marília', r: 'irmã da Débora · 30 anos · 1,70 m — passaporte + visto', s: 'pend' }
+      { n: 'José', r: 'passaporte + 1º visto', s: 'pend' }
     ],
     checklist: [
       { f: 'Agora (jul–ago/2026)', t: 'Conferir validade dos 5 passaportes existentes (além de mai/2027)', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Passaporte do José: pagar GRU (R$ 257,25) e agendar na PF — os dois pais + certidão', ok: false },
-      { f: 'Agora (jul–ago/2026)', t: 'Passaporte da Marília: conferir validade (além de mai/2027) ou emitir na PF', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Confirmar o saldo de 650 mil pontos no app Azul Fidelidade', ok: false },
       { f: 'Agora (jul–ago/2026)', t: 'Assinar o menor plano do Clube Azul (descontos + bônus + pontos não expiram)', ok: true },
       { f: 'Agora (jul–ago/2026)', t: 'Ativar alertas de emissão em pontos VCP–MCO (Melhores Destinos, PP, PPV)', ok: false },
-      { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario, Marília e José', ok: false },
-      { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina, Dario e Marília juntos', ok: false },
+      { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario e José', ok: false },
+      { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina e Dario juntos', ok: false },
       { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
       { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
       { f: 'Ago–nov/2026', t: 'Ida dos 4 emitida: Azul AD 8706, 22/04 09:45 (assentos Economy Xtra) ✓', ok: true },
       { f: 'Ago–nov/2026', t: 'Emitir as 4 passagens da volta (MCO → VCP, 11/05): 3 em pontos + cortesia Skyline na reserva do Gabriel — alvo ≤125 mil/pessoa (saldo 376 mil); Azul Friday 13/11', ok: false },
-      { f: 'Ago–nov/2026', t: 'Regina, Dario e Marília: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false },
-      { f: 'Nov/2026–jan/2027', t: 'Vistos dos 4 em mãos ✓', ok: false },
+      { f: 'Ago–nov/2026', t: 'Regina e Dario: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Vistos dos 3 em mãos ✓', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Reservar minivan com cancelamento grátis — pagar no Skyline (ativa CDW)', ok: false },
       { f: 'Fev–mar/2027', t: 'Dia -60, 6h ET: reservas de restaurantes (Topolino’s primeiro, depois Akershus, Tusker, Chef Mickey’s)', ok: false },
       { f: 'Fev–mar/2027', t: 'Emitir os 4 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs', ok: false },
-      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós e da Marília; seguro dedicado se houver doença preexistente', ok: false },
+      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente', ok: false },
       { f: 'Fev–mar/2027', t: 'Reconferir regras do Lightning Lane e comprar Multi Pass (MK e HS)', ok: false },
-      { f: 'Fev–mar/2027', t: 'Cadastrar os 7 no My Disney Experience + app Universal; vincular ingressos', ok: false },
+      { f: 'Fev–mar/2027', t: 'Cadastrar os 6 no My Disney Experience + app Universal; vincular ingressos', ok: false },
       { f: 'Semana da viagem', t: 'Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas', ok: false },
       { f: 'Semana da viagem', t: 'Receitas médicas dos avós; remédios na bagagem de mão', ok: false },
       { f: 'Semana da viagem', t: 'Check-in online; despacho de carrinho e cadeirinha', ok: false },
@@ -128,7 +126,6 @@
     [/saldo de 650 mil/, '2026-08-10'],
     [/alertas de emissão/, '2026-08-15'],
     [/Passaporte do José/, '2026-08-31'],
-    [/Passaporte da Marília/, '2026-08-31'],
     [/DS-160/, '2026-09-30'],
     [/ingressos Disney num dia de real forte/, '2026-09-30'],
     [/Reservar Celebration/, '2026-10-15'],
@@ -136,13 +133,13 @@
     [/Emitir as 4 passagens/, '2026-11-30'],
     [/passagens no cartão deles/, '2026-11-30'],
     [/Universal 3 dias.*Black Friday/, '2026-12-09'],
-    [/Vistos dos 4/, '2026-12-31'],
+    [/Vistos dos \d/, '2026-12-31'],
     [/minivan/, '2027-01-31'],
     [/reservas de restaurantes/, '2027-02-22'],
     [/apólice do cartão/, '2027-03-15'],
     [/Lightning Lane e comprar Multi Pass/, '2027-03-31'],
     [/bilhetes de seguro AIG/, '2027-03-31'],
-    [/Cadastrar os 7/, '2027-03-31'],
+    [/Cadastrar os \d/, '2027-03-31'],
     [/Remedir as alturas/, '2027-04-16'],
     [/Documentos na mão/, '2027-04-20'],
     [/Receitas médicas/, '2027-04-20'],
@@ -174,7 +171,7 @@
     out.push(
       { c: 'documento', t: 'Certidões de nascimento — Laura e José (cópias)', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Voos Azul em pontos (4) — ida AD 8706, 22/04 09:45', num: '', val: '', url: '' },
-      { c: 'reserva', t: 'Voos avós + Marília — localizador', num: '', val: '', url: '' },
+      { c: 'reserva', t: 'Voos avós — localizador', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Hotel Celebration Suites — 5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Minivan — confirmação', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Restaurantes (dia -60) — confirmações', num: '', val: '', url: '' },
@@ -182,7 +179,7 @@
       { c: 'ingresso', t: 'Universal 3 dias', num: '', val: '', url: '' },
       { c: 'ingresso', t: 'LEGOLAND + Peppa Pig Park', num: '', val: '', url: '' },
       { c: 'seguro', t: 'Bilhetes AIG/MasterAssist (4 do Skyline)', num: '', val: '', url: '' },
-      { c: 'seguro', t: 'Seguro do cartão — avós e Marília', num: '', val: '', url: '' }
+      { c: 'seguro', t: 'Seguro do cartão — avós', num: '', val: '', url: '' }
     );
     return out;
   }
@@ -274,6 +271,32 @@
           if (d.t === 'Voos Azul em pontos (4) — localizador') d.t = 'Voos Azul em pontos (4) — ida AD 8706, 22/04 09:45';
         });
         s.flags.ida2204 = true;
+      }
+      // Marília não vai mais (nov/2026): o grupo volta a 6 pessoas
+      if (!s.flags.semMarilia) {
+        s.pessoas = s.pessoas.filter(function (p) { return p.n !== 'Marília'; });
+        s.custos.forEach(function (c) {
+          if (c.n === 'Compras pessoais (US$ 1.000 × 7)' && c.v === 7000) { c.n = 'Compras pessoais (US$ 1.000 × 6)'; c.v = 6000; }
+        });
+        s.checklist = s.checklist.filter(function (i) { return !/^Passaporte da Marília/.test(i.t); });
+        s.checklist.forEach(function (i) {
+          i.t = i.t.replace('para Regina, Dario, Marília e José', 'para Regina, Dario e José')
+            .replace('Regina, Dario e Marília juntos', 'Regina e Dario juntos')
+            .replace('Regina, Dario e Marília: comprar as passagens', 'Regina e Dario: comprar as passagens')
+            .replace('Vistos dos 4 em mãos', 'Vistos dos 3 em mãos')
+            .replace('cartão dos avós e da Marília;', 'cartão dos avós;')
+            .replace('Cadastrar os 7 no My Disney Experience', 'Cadastrar os 6 no My Disney Experience');
+        });
+        if (s.compras) s.compras.forEach(function (it) { if (it.p === 'Marília') it.p = 'Família'; });
+        if (s.malas) s.malas = s.malas.filter(function (m) { return m.p !== 'Marília'; });
+        if (s.docs) {
+          s.docs = s.docs.filter(function (d) { return !(/— Marília$/.test(d.t) && !d.num && !d.val && !d.url); });
+          s.docs.forEach(function (d) {
+            if (d.t === 'Voos avós + Marília — localizador') d.t = 'Voos avós — localizador';
+            if (d.t === 'Seguro do cartão — avós e Marília') d.t = 'Seguro do cartão — avós';
+          });
+        }
+        s.flags.semMarilia = true;
       }
       if (!s.alturas) s.alturas = { jose: 86, laura: 113 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
