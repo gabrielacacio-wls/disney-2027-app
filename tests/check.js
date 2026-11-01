@@ -118,6 +118,10 @@ const { chromium } = require('playwright');
   await page.click('#tabbtn-custos');
   // centraliza a legenda: no rodapé ela fica sob os toasts fixos (atraso, link copiado)
   await page.locator('#legend').evaluate(el => el.scrollIntoView({ block: 'center' }));
+  await page.waitForTimeout(600);
+  console.log('DIAG', await page.evaluate(() => { const d = el => { const c = []; for (let p = el; p && c.length < 6; p = p.parentElement) c.push(p.tagName + (p.id ? '#' + p.id : '') + (typeof p.className === 'string' && p.className ? '.' + p.className.split(' ').join('.') : '')); return c.join(' < '); }; const r = document.querySelector('#legend .row').getBoundingClientRect(); const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); const cd = document.getElementById('legend').closest('.card').getBoundingClientRect(); return JSON.stringify({ row: [r.x, r.y, r.width, r.height], card: [cd.x, cd.y, cd.width, cd.height], sy: scrollY, ih: innerHeight, dh: document.documentElement.scrollHeight, hit: e ? d(e) : null, txt: e ? (e.textContent || '').slice(0, 90) : '' }); }));
+  await page.screenshot({ path: 'shot-legend.png' });
+  await page.screenshot({ path: 'shot-legend-full.png', fullPage: true });
   await page.locator('#legend .row').first().hover();
   const dimmed = await page.evaluate(() => document.querySelectorAll('#donut circle.dim').length);
   check('hover na legenda destaca fatia', dimmed > 0, dimmed + ' dimmed');
