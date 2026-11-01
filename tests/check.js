@@ -348,12 +348,15 @@ const { chromium } = require('playwright');
   });
   await pMg.reload({ waitUntil: 'load' });
   await pMg.waitForTimeout(800);
-  const mig = await pMg.evaluate(() => JSON.parse(localStorage.getItem('disney2027-planner-v1')));
-  const migTxt = JSON.stringify(mig.pessoas) + JSON.stringify(mig.checklist) + JSON.stringify(mig.docs);
-  const migCompras = mig.custos.find(c => /Compras pessoais/.test(c.n));
-  const migPresente = mig.compras.find(c => c.t === 'Presente da Marília');
-  check('migração: Marília removida de pessoas, checklist e documentos', !migTxt.includes('Marília') && mig.pessoas.length === 6, mig.pessoas.map(p => p.n).join(','));
-  check('migração: compras voltam a US$ 6.000 e item dela vai para Família', migCompras.v === 6000 && migPresente && migPresente.p === 'Família', migCompras.n);
+  // a migração roda em memória ao abrir (grava no próximo salvamento), então a checagem é pela tela
+  const migNomes = await pMg.$$eval('#pesGrid input.nm', els => els.map(e => e.value));
+  const migCheck = await pMg.textContent('#phases');
+  const migDocs = await pMg.$$eval('#docsGroups input.tt', els => els.map(e => e.value).join('|'));
+  check('migração: Marília removida de pessoas, checklist e documentos', migNomes.length === 6 && !migNomes.includes('Marília') && !migCheck.includes('Marília') && !migDocs.includes('Marília'), migNomes.join(','));
+  const migCustos = await pMg.$$eval('#custoRows tr', trs => trs.map(tr => { const i = tr.querySelectorAll('input'); return i[0].value + '=' + i[1].value; }));
+  const migCompras = migCustos.find(c => /Compras pessoais/.test(c)) || '';
+  const migPresente = await pMg.$$eval('.shop-row', rows => { const r = rows.find(x => x.querySelector('input[type=text]').value === 'Presente da Marília'); return r ? r.querySelector('select').value : ''; });
+  check('migração: compras voltam a US$ 6.000 e item dela vai para Família', migCompras.endsWith('=6000') && migPresente === 'Família', migCompras + ' / ' + migPresente);
   check('migração: média volta a ÷6', (await pMg.textContent('#stPPLbl')).includes('(6)'));
   await ctxMg.close();
 
