@@ -147,7 +147,7 @@ table.custos tfoot td { font-weight: 700; border-bottom: none; padding-top: 10px
 .theme-btn { padding: 6px 10px; font-size: 15px; line-height: 1; border-radius: 999px; }
 .field { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
 .field input, .field select { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px; padding: 6px 8px; font: inherit; font-size: 13px; }
-.legend { display: grid; gap: 7px; margin-top: 4px; }
+.legend { display: grid; grid-template-columns: minmax(0, 1fr); gap: 7px; margin-top: 4px; }
 .legend .row { display: flex; align-items: center; gap: 8px; font-size: 13px; border-radius: 6px; padding: 1px 4px; cursor: default; transition: opacity .15s; }
 .legend .row.dim { opacity: .4; }
 .legend .sw { width: 11px; height: 11px; border-radius: 3px; flex-shrink: 0; }

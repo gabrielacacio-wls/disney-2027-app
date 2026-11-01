@@ -10,17 +10,16 @@
   var DEF = {
     inicio: '2027-04-22', fim: '2027-05-11', cambio: 5.5,
     custos: [
-      { n: 'Ingressos Disney (8 dias + Lightning Lane)', v: 4700 },
-      { n: 'Hospedagem — Celebration Suites 2BR/2BA', v: 3400 },
+      { n: 'Ingressos Disney (10 dias + Lightning Lane)', v: 5050 },
+      { n: 'Hospedagem — Celebration Suites 2BR/2BA (19 noites + late checkout)', v: 2725 },
       { n: 'Alimentação (mercado + parques)', v: 3000 },
-      { n: 'Universal (3 dias) + LEGOLAND/Peppa', v: 2650 },
-      { n: 'Carro (minivan) + gasolina + estacionamento', v: 1500 },
+      { n: 'Universal All Parks 14 dias (com Epic e Volcano Bay)', v: 2717 },
+      { n: 'Carro (minivan c/ proteções) + gasolina + estacionamento + cadeirinha', v: 1900 },
       { n: 'Voos — taxas de embarque (4 em pontos)', v: 370 },
       { n: 'Voos — assentos Economy Xtra (R$ 3.000)', v: 594 },
-      { n: 'Seguro viagem (plano B)', v: 330 },
       { n: 'Compras pessoais (US$ 1.000 × 6)', v: 6000 }
     ],
-    flags: { compras1000: true, marilia: true, voosCartao: true, voosEmitidos: true, ida2204: true, semMarilia: true },
+    flags: { compras1000: true, marilia: true, voosCartao: true, voosEmitidos: true, ida2204: true, semMarilia: true, precosNov26: true },
     alturas: { jose: 86, laura: 113 },
     cofre: { meta: 0, aportes: [] },
     diaCheck: {},
@@ -72,17 +71,17 @@
       '2027-04-28': { t: 'parque', d: 'EPCOT #1 — Frozen e Remy cedo; almoço Akershus; Flower & Garden' },
       '2027-04-29': { t: 'descanso', d: 'Folga; café da manhã Topolino’s Terrace (Riviera)' },
       '2027-04-30': { t: 'parque', d: 'Animal Kingdom — safári cedo; almoço Tusker House; sair ~15h' },
-      '2027-05-01': { t: 'parque', d: 'LEGOLAND (Laura) + Peppa Pig Park (José) — grupo se divide' },
+      '2027-05-01': { t: 'parque', d: 'EPCOT #2 — Flower & Garden no ritmo dos avós; Test Track e Cosmic Rewind para a Laura' },
       '2027-05-02': { t: 'descanso', d: 'Piscina; Old Town a pé à noite' },
       '2027-05-03': { t: 'parque', d: 'Hollywood Studios — Toy Story Land cedo; Rider Switch em Rise/Tower' },
       '2027-05-04': { t: 'descanso', d: 'Descanso / piscina' },
       '2027-05-05': { t: 'parque', d: 'Epic Universe — Super Nintendo World + Isle of Berk (Child Swap)' },
       '2027-05-06': { t: 'parque', d: 'Universal Studios — DreamWorks Land + Minion Land + E.T.' },
-      '2027-05-07': { t: 'descanso', d: 'Descanso / piscina' },
-      '2027-05-08': { t: 'parque', d: 'Islands of Adventure — Seuss Landing; Potter para os adultos' },
+      '2027-05-07': { t: 'parque', d: 'Islands of Adventure — Seuss Landing; Potter para os adultos (sexta: bem mais vazio que sábado)' },
+      '2027-05-08': { t: 'descanso', d: 'Descanso / piscina (sábado é o dia mais cheio da Universal)' },
       '2027-05-09': { t: 'parque', d: 'Magic Kingdom #2 — despedida, fotos no castelo, fogos' },
-      '2027-05-10': { t: 'compras', d: 'Compras finais, malas, piscina' },
-      '2027-05-11': { t: 'viagem', d: 'Devolução do carro, voo MCO → VCP' }
+      '2027-05-10': { t: 'parque', d: 'Volcano Bay — chegar na abertura; base perto da Tot Tiki Reef (José); botes em família com a Laura' },
+      '2027-05-11': { t: 'viagem', d: 'Compras finais e malas de manhã; late checkout até 17h; devolução do carro; voo AD 8707 MCO → VCP (~20:00)' }
     },
     pessoas: [
       { n: 'Gabriel', r: 'visto válido', s: 'ok' },
@@ -101,16 +100,16 @@
       { f: 'Ago–nov/2026', t: 'DS-160 + taxa MRV (US$ 185) para Regina, Dario e José', ok: false },
       { f: 'Ago–nov/2026', t: 'Entrevistas de visto — José com um dos pais; Regina e Dario juntos', ok: false },
       { f: 'Ago–nov/2026', t: 'Reservar Celebration Suites: 2BR/2BA renovada, térreo, longe do Old Town/US-192', ok: false },
-      { f: 'Ago–nov/2026', t: 'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX', ok: false },
+      { f: 'Ago–nov/2026', t: 'Comprar Disney 10 dias base, início 26/04 (só o de 10 dias cobre até 09/05) — referência OPB R$ 23.346 à vista; comparar cupons na Black Friday', ok: false },
       { f: 'Ago–nov/2026', t: 'Ida dos 4 emitida: Azul AD 8706, 22/04 09:45 (assentos Economy Xtra) ✓', ok: true },
       { f: 'Ago–nov/2026', t: 'Emitir as 4 passagens da volta (MCO → VCP, 11/05): 3 em pontos + cortesia Skyline na reserva do Gabriel — alvo ≤125 mil/pessoa (saldo 376 mil); Azul Friday 13/11', ok: false },
-      { f: 'Ago–nov/2026', t: 'Regina e Dario: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão', ok: false },
+      { f: 'Ago–nov/2026', t: 'Passagens de Regina e Dario: emitir no Skyline do Gabriel (mesmo voo AD 8706) — ativa o seguro MasterAssist para eles', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Vistos dos 3 em mãos ✓', ok: false },
-      { f: 'Nov/2026–jan/2027', t: 'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)', ok: false },
+      { f: 'Nov/2026–jan/2027', t: 'Comprar Universal All Parks 14 dias (com Volcano Bay) — referência OPB R$ 14.942 à vista; comparar cupons na Black Friday (18/11–09/12)', ok: false },
       { f: 'Nov/2026–jan/2027', t: 'Reservar minivan com cancelamento grátis — pagar no Skyline (ativa CDW)', ok: false },
       { f: 'Fev–mar/2027', t: 'Dia -60, 6h ET: reservas de restaurantes (Topolino’s primeiro, depois Akershus, Tusker, Chef Mickey’s)', ok: false },
-      { f: 'Fev–mar/2027', t: 'Emitir os 4 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs', ok: false },
-      { f: 'Fev–mar/2027', t: 'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente', ok: false },
+      { f: 'Fev–mar/2027', t: 'Emitir os 6 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs', ok: false },
+      { f: 'Fev–mar/2027', t: 'Avós: se houver doença preexistente, avaliar apólice extra (o MasterAssist só cobre crise aguda)', ok: false },
       { f: 'Fev–mar/2027', t: 'Reconferir regras do Lightning Lane e comprar Multi Pass (MK e HS)', ok: false },
       { f: 'Fev–mar/2027', t: 'Cadastrar os 6 no My Disney Experience + app Universal; vincular ingressos', ok: false },
       { f: 'Semana da viagem', t: 'Documentos na mão: passaportes + vistos, certidões das crianças, seguros, reservas', ok: false },
@@ -127,16 +126,16 @@
     [/alertas de emissão/, '2026-08-15'],
     [/Passaporte do José/, '2026-08-31'],
     [/DS-160/, '2026-09-30'],
-    [/ingressos Disney num dia de real forte/, '2026-09-30'],
+    [/Comprar Disney 10 dias/, '2026-12-02'],
     [/Reservar Celebration/, '2026-10-15'],
     [/Entrevistas de visto/, '2026-10-31'],
     [/Emitir as 4 passagens/, '2026-11-30'],
-    [/passagens no cartão deles/, '2026-11-30'],
-    [/Universal 3 dias.*Black Friday/, '2026-12-09'],
+    [/Passagens de Regina e Dario/, '2026-11-30'],
+    [/Universal All Parks/, '2026-12-09'],
     [/Vistos dos \d/, '2026-12-31'],
     [/minivan/, '2027-01-31'],
     [/reservas de restaurantes/, '2027-02-22'],
-    [/apólice do cartão/, '2027-03-15'],
+    [/apólice extra/, '2027-03-15'],
     [/Lightning Lane e comprar Multi Pass/, '2027-03-31'],
     [/bilhetes de seguro AIG/, '2027-03-31'],
     [/Cadastrar os \d/, '2027-03-31'],
@@ -175,11 +174,9 @@
       { c: 'reserva', t: 'Hotel Celebration Suites — 5820 W Irlo Bronson Memorial Hwy, Kissimmee, FL 34746', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Minivan — confirmação', num: '', val: '', url: '' },
       { c: 'reserva', t: 'Restaurantes (dia -60) — confirmações', num: '', val: '', url: '' },
-      { c: 'ingresso', t: 'Ingressos Disney (8 dias + Lightning Lane)', num: '', val: '', url: '' },
-      { c: 'ingresso', t: 'Universal 3 dias', num: '', val: '', url: '' },
-      { c: 'ingresso', t: 'LEGOLAND + Peppa Pig Park', num: '', val: '', url: '' },
-      { c: 'seguro', t: 'Bilhetes AIG/MasterAssist (4 do Skyline)', num: '', val: '', url: '' },
-      { c: 'seguro', t: 'Seguro do cartão — avós', num: '', val: '', url: '' }
+      { c: 'ingresso', t: 'Ingressos Disney (10 dias + Lightning Lane)', num: '', val: '', url: '' },
+      { c: 'ingresso', t: 'Universal All Parks 14 dias (com Volcano Bay)', num: '', val: '', url: '' },
+      { c: 'seguro', t: 'Bilhetes AIG/MasterAssist (6 do Skyline)', num: '', val: '', url: '' }
     );
     return out;
   }
@@ -297,6 +294,54 @@
           });
         }
         s.flags.semMarilia = true;
+      }
+      // Preços de nov/2026: sem LEGOLAND, 01/05 na Disney, Volcano Bay, IOA na sexta e seguro dos 6 pelo Skyline.
+      // Só troca o que ainda está no valor/texto padrão, para não sobrescrever edição do usuário.
+      if (!s.flags.precosNov26) {
+        var novosCustos = [];
+        s.custos.forEach(function (c) {
+          if (c.n === 'Ingressos Disney (8 dias + Lightning Lane)' && c.v === 4700) { c.n = 'Ingressos Disney (10 dias + Lightning Lane)'; c.v = 5050; }
+          if (c.n === 'Hospedagem — Celebration Suites 2BR/2BA' && c.v === 3400) { c.n = 'Hospedagem — Celebration Suites 2BR/2BA (19 noites + late checkout)'; c.v = 2725; }
+          if (c.n === 'Universal (3 dias) + LEGOLAND/Peppa' && c.v === 2650) { c.n = 'Universal All Parks 14 dias (com Epic e Volcano Bay)'; c.v = 2717; }
+          if (c.n === 'Carro (minivan) + gasolina + estacionamento' && c.v === 1500) { c.n = 'Carro (minivan c/ proteções) + gasolina + estacionamento + cadeirinha'; c.v = 1900; }
+          if (c.n === 'Seguro viagem (plano B)' && c.v === 330 && !c.r && !c.p) return;
+          novosCustos.push(c);
+        });
+        s.custos = novosCustos;
+        var rot = s.roteiro;
+        var trocaDia = function (dia, antigo, novo) { if (rot[dia] && rot[dia].d === antigo) rot[dia] = novo; };
+        trocaDia('2027-05-01', 'LEGOLAND (Laura) + Peppa Pig Park (José) — grupo se divide', { t: 'parque', d: 'EPCOT #2 — Flower & Garden no ritmo dos avós; Test Track e Cosmic Rewind para a Laura' });
+        if (rot['2027-05-07'] && rot['2027-05-07'].d === 'Descanso / piscina' && rot['2027-05-08'] && rot['2027-05-08'].d === 'Islands of Adventure — Seuss Landing; Potter para os adultos') {
+          rot['2027-05-07'] = { t: 'parque', d: 'Islands of Adventure — Seuss Landing; Potter para os adultos (sexta: bem mais vazio que sábado)' };
+          rot['2027-05-08'] = { t: 'descanso', d: 'Descanso / piscina (sábado é o dia mais cheio da Universal)' };
+        }
+        trocaDia('2027-05-10', 'Compras finais, malas, piscina', { t: 'parque', d: 'Volcano Bay — chegar na abertura; base perto da Tot Tiki Reef (José); botes em família com a Laura' });
+        trocaDia('2027-05-11', 'Devolução do carro, voo MCO → VCP', { t: 'viagem', d: 'Compras finais e malas de manhã; late checkout até 17h; devolução do carro; voo AD 8707 MCO → VCP (~20:00)' });
+        var trocasCk = {
+          'Comprar ingressos Disney num dia de real forte (antes de out/2026), via revendedor BR no PIX': ['Comprar Disney 10 dias base, início 26/04 (só o de 10 dias cobre até 09/05) — referência OPB R$ 23.346 à vista; comparar cupons na Black Friday', '2026-12-02'],
+          'Regina e Dario: comprar as passagens no cartão deles (mesmo voo VCP–MCO) e conferir o seguro viagem do cartão': ['Passagens de Regina e Dario: emitir no Skyline do Gabriel (mesmo voo AD 8706) — ativa o seguro MasterAssist para eles', null],
+          'Comprar Universal 3 dias (calendário 2027 abre fim de out) + LEGOLAND/Peppa na Black Friday (18/11–09/12)': ['Comprar Universal All Parks 14 dias (com Volcano Bay) — referência OPB R$ 14.942 à vista; comparar cupons na Black Friday (18/11–09/12)', null],
+          'Emitir os 4 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs': ['Emitir os 6 bilhetes de seguro AIG/MasterAssist (Skyline) e guardar os PDFs', null],
+          'Conferir apólice do cartão dos avós; seguro dedicado se houver doença preexistente': ['Avós: se houver doença preexistente, avaliar apólice extra (o MasterAssist só cobre crise aguda)', null]
+        };
+        s.checklist.forEach(function (i) {
+          var tr = trocasCk[i.t];
+          if (!tr) return;
+          i.t = tr[0];
+          if (tr[1] && !i.ok) i.d = tr[1];
+        });
+        if (s.docs) {
+          s.docs = s.docs.filter(function (d) {
+            var vazio = !d.num && !d.val && !d.url;
+            return !(vazio && (d.t === 'LEGOLAND + Peppa Pig Park' || d.t === 'Seguro do cartão — avós'));
+          });
+          s.docs.forEach(function (d) {
+            if (d.t === 'Ingressos Disney (8 dias + Lightning Lane)') d.t = 'Ingressos Disney (10 dias + Lightning Lane)';
+            if (d.t === 'Universal 3 dias') d.t = 'Universal All Parks 14 dias (com Volcano Bay)';
+            if (d.t === 'Bilhetes AIG/MasterAssist (4 do Skyline)') d.t = 'Bilhetes AIG/MasterAssist (6 do Skyline)';
+          });
+        }
+        s.flags.precosNov26 = true;
       }
       if (!s.alturas) s.alturas = { jose: 86, laura: 113 };
       if (!s.cofre) s.cofre = { meta: 0, aportes: [] };
@@ -494,15 +539,15 @@
     var ini = pd(S.inicio);
     return [
       { l: 'Semana do Cliente Azul — vigiar voos em pontos', d: new Date(2026, 8, 8) },
-      { l: 'Universal abre calendário 2027 (comprar 3-day)', d: new Date(2026, 9, 23) },
+      { l: 'Volcano Bay reabre (prazo oficial) — confirmar antes da viagem', d: new Date(2027, 3, 1) },
       { l: 'Azul Friday — janela nº 1 p/ emitir os voos ✈', d: new Date(2026, 10, 13) },
-      { l: 'Black Friday parques — LEGOLAND+Peppa e Universal', d: new Date(2026, 10, 24) },
+      { l: 'Black Friday — cupons de ingressos Disney e Universal (ref. OPB)', d: new Date(2026, 10, 24) },
       { l: 'Meta: vistos dos 3 em mãos', d: new Date(2026, 11, 31) },
       { l: 'Emitir as passagens com pontos (limite)', d: new Date(2027, 0, 31) },
       { l: 'Aniversário VPD — última grande promo de ingressos', d: new Date(2027, 2, 11) },
       { l: 'Reservas de restaurantes — dia -60, 6h ET', d: addDays(ini, -60) },
       { l: 'Remedir alturas + reconferir Lightning Lane', d: addDays(ini, -30) },
-      { l: 'Bilhetes e apólices de seguro de todos (até)', d: addDays(ini, -7) },
+      { l: 'Bilhetes AIG do seguro Skyline dos 6 (até)', d: addDays(ini, -7) },
       { l: 'Embarque VCP → MCO ✈', d: ini }
     ].sort(function (a, b) { return a.d - b.d; });
   }
